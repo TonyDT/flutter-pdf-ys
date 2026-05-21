@@ -1,0 +1,58 @@
+name: flutter_pdf
+description: "ZeronPDF"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # PDF rendering & manipulation
+  syncfusion_flutter_pdfviewer: ^27.1.48
+  syncfusion_flutter_pdf: ^27.1.48
+  
+  # PDF rendering to images
+  pdf_render: ^1.1.28
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Local persistence
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # File picking
+  file_picker: ^8.0.0
+
+  # Image processing
+  image: ^4.2.0
+
+  # Path utilities
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # UI utilities
+  flutter_spinkit: ^5.2.1
+  share_plus: ^9.0.0
+
+
+
+  # Encryption
+  encrypt: ^5.0.3
+  crypto: ^3.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
