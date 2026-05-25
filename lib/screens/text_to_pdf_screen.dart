@@ -94,7 +94,7 @@ class _TextToPdfScreenState extends State<TextToPdfScreen> {
         await outputDir.create(recursive: true);
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final file = File(p.join(outputDir.path, 'text_${timestamp}.pdf'));
+      final file = File(p.join(outputDir.path, 'text_$timestamp.pdf'));
       await file.writeAsBytes(bytes);
 
       setState(() => _outputFile = file);

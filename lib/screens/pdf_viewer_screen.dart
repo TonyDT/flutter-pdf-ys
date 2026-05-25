@@ -5,15 +5,14 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
-import '../core/constants/app_styles.dart';
-import '../core/premium/premium_provider.dart';
 import '../core/theme/theme_provider.dart';
 import '../services/bookmark_service.dart';
 
 class PdfViewerScreen extends ConsumerStatefulWidget {
   final File pdfFile;
+  final int? initialPage;
 
-  const PdfViewerScreen({super.key, required this.pdfFile});
+  const PdfViewerScreen({super.key, required this.pdfFile, this.initialPage});
 
   @override
   ConsumerState<PdfViewerScreen> createState() => _PdfViewerScreenState();
@@ -104,7 +103,8 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
                             icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.textSecondary),
                             onPressed: () async {
                               await BookmarkService.removeBookmark(bm.filePath, bm.pageNumber);
-                              Navigator.pop(ctx);
+                              if (!mounted) return;
+                              if (ctx.mounted) Navigator.pop(ctx);
                               _checkBookmark();
                             },
                           ),
@@ -158,6 +158,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
             key: _pdfViewerKey,
             controller: _pdfController,
             canShowTextSelectionMenu: true,
+            initialPageNumber: widget.initialPage ?? 1,
             onDocumentLoaded: (details) {
               setState(() {
                 _isLoading = false;

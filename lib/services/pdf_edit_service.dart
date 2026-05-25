@@ -21,7 +21,7 @@ class PdfEditService {
           destPage.graphics.drawPdfTemplate(
             srcPage.createTemplate(),
             Offset.zero,
-            Size(srcPage.size.width, srcPage.size.height),
+            srcPage.size,
           );
         }
         srcDoc.dispose();
@@ -53,7 +53,7 @@ class PdfEditService {
           destPage.graphics.drawPdfTemplate(
             srcPage.createTemplate(),
             Offset.zero,
-            Size(srcPage.size.width, srcPage.size.height),
+            srcPage.size,
           );
         }
         final newBytes = newDoc.saveSync();
@@ -104,7 +104,7 @@ class PdfEditService {
           destPage.graphics.drawPdfTemplate(
             srcPage.createTemplate(),
             Offset.zero,
-            Size(srcPage.size.width, srcPage.size.height),
+            srcPage.size,
           );
         }
       }
@@ -171,6 +171,25 @@ class PdfEditService {
     } catch (e) {
       debugPrint('Decrypt PDF failed: $e');
       return null;
+    }
+  }
+
+  /// Extract text from a specific page
+  static Future<String> extractText(File pdfFile, int pageNumber) async {
+    try {
+      final bytes = await pdfFile.readAsBytes();
+      final doc = PdfDocument(inputBytes: bytes);
+      if (pageNumber < 1 || pageNumber > doc.pages.count) {
+        doc.dispose();
+        return '';
+      }
+      final extractor = PdfTextExtractor(doc);
+      final text = extractor.extractText(startPageIndex: pageNumber - 1, endPageIndex: pageNumber - 1);
+      doc.dispose();
+      return text;
+    } catch (e) {
+      debugPrint('Extract text failed: $e');
+      return '';
     }
   }
 

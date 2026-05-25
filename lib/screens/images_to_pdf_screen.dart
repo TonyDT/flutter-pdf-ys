@@ -1,20 +1,22 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/premium/premium_guard.dart';
 import '../services/convert_service.dart';
 import 'package:share_plus/share_plus.dart';
 
-class ImagesToPdfScreen extends StatefulWidget {
+class ImagesToPdfScreen extends ConsumerStatefulWidget {
   const ImagesToPdfScreen({super.key});
 
   @override
-  State<ImagesToPdfScreen> createState() => _ImagesToPdfScreenState();
+  ConsumerState<ImagesToPdfScreen> createState() => _ImagesToPdfScreenState();
 }
 
-class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
+class _ImagesToPdfScreenState extends ConsumerState<ImagesToPdfScreen> {
   final List<File> _selectedImages = [];
   bool _isProcessing = false;
   File? _outputFile;
@@ -36,6 +38,7 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
   }
 
   Future<void> _convertToPdf() async {
+    if (!await checkPremium(context, ref)) return;
     if (_selectedImages.isEmpty) return;
     setState(() => _isProcessing = true);
     try {
@@ -64,44 +67,28 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
         );
       }
     } finally {
-      setState(() => _isProcessing = false);
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   void _shareFile() {
     if (_outputFile != null) {
-      Share.shareXFiles([XFile(_outputFile!.path)], text: 'PDF Pro - 图片转PDF');
-    }
-  }
-
-  Future<void> _saveToGallery() async {
-    if (_outputFile == null) return;
-    
-    // 使用分享功能让用户保存文件
-    try {
-      await Share.shareXFiles(
-        [XFile(_outputFile!.path)],
-        text: 'PDF Pro - 图片转PDF',
-        subject: _outputFile!.path.split('/').last,
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e'), backgroundColor: AppColors.error),
-        );
-      }
+      Share.shareXFiles([XFile(_outputFile!.path)], text: 'ZeronPDF - 图片转PDF');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final canAccess = ref.watch(premiumProvider).canAccess('image_to_pdf');
+
     return Scaffold(
-      appBar: AppBar(title: const Text('图片转PDF', style: AppFonts.h3)),
+      appBar: AppBar(title: const Text('图片转PDF')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!canAccess) _buildPremiumBanner(),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
@@ -180,11 +167,6 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.save_alt),
-                        tooltip: '保存到相册',
-                        onPressed: _saveToGallery,
-                      ),
-                      IconButton(
                         icon: const Icon(Icons.share),
                         tooltip: '分享',
                         onPressed: _shareFile,
@@ -196,6 +178,30 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.workspace_premium, color: AppColors.warning, size: 20),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Premium功能，升级后可用', style: AppFonts.bodySmall.copyWith(color: AppColors.warning))),
+          TextButton(
+            onPressed: () => checkPremium(context, ref),
+            child: const Text('升级', style: TextStyle(color: AppColors.warning)),
+          ),
+        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
@@ -7,17 +8,18 @@ import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/premium/premium_guard.dart';
 import '../services/pdf_service.dart';
 import '../services/pdf_edit_service.dart';
 
-class AddAnnotationScreen extends StatefulWidget {
+class AddAnnotationScreen extends ConsumerStatefulWidget {
   const AddAnnotationScreen({super.key});
 
   @override
-  State<AddAnnotationScreen> createState() => _AddAnnotationScreenState();
+  ConsumerState<AddAnnotationScreen> createState() => _AddAnnotationScreenState();
 }
 
-class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
+class _AddAnnotationScreenState extends ConsumerState<AddAnnotationScreen> {
   File? _selectedFile;
   int _totalPages = 0;
   bool _isProcessing = false;
@@ -38,6 +40,7 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
   }
 
   Future<void> _addAnnotation() async {
+    if (!await checkPremium(context, ref)) return;
     if (_selectedFile == null) return;
     setState(() => _isProcessing = true);
     try {
@@ -103,7 +106,7 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('注释添加成功！'), backgroundColor: AppColors.success),
         );
-        Share.shareXFiles([XFile(file.path)], text: 'PDF Pro - 添加注释');
+        Share.shareXFiles([XFile(file.path)], text: 'ZeronPDF - 添加注释');
       }
     } catch (e) {
       if (mounted) {
@@ -112,7 +115,7 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
         );
       }
     } finally {
-      setState(() => _isProcessing = false);
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -125,13 +128,16 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canAccess = ref.watch(premiumProvider).canAccess('pdf_annotate');
+
     return Scaffold(
-      appBar: AppBar(title: const Text('添加注释', style: AppFonts.h3)),
+      appBar: AppBar(title: const Text('添加注释')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!canAccess) _buildPremiumBanner(),
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -168,7 +174,7 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
                         ButtonSegment(value: 'note', label: Text('便签'), icon: Icon(Icons.sticky_note_2)),
                       ],
                       selected: {_annotationType},
-                      onSelectionChanged: (v) => setState(() => _annotationType = v.first),
+                      onSelectionChanged: canAccess ? (v) => setState(() => _annotationType = v.first) : null,
                     ),
                     if (_annotationType == 'note') ...[
                       const SizedBox(height: 12),
@@ -191,7 +197,10 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
                                   height: 36,
                                   decoration: BoxDecoration(
                                     color: c,
-                                    border: Border.all(color: c == _annotationColor ? AppColors.primary : AppColors.border, width: c == _annotationColor ? 3 : 1),
+                                    border: Border.all(
+                                      color: c == _annotationColor ? AppColors.primary : AppColors.border,
+                                      width: c == _annotationColor ? 3 : 1,
+                                    ),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                 ),
@@ -216,6 +225,30 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.workspace_premium, color: AppColors.warning, size: 20),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Premium功能，升级后可用', style: AppFonts.bodySmall.copyWith(color: AppColors.warning))),
+          TextButton(
+            onPressed: () => checkPremium(context, ref),
+            child: const Text('升级', style: TextStyle(color: AppColors.warning)),
+          ),
+        ],
       ),
     );
   }

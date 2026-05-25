@@ -1,7 +1,11 @@
-// settings_screen.dart - 最终干净版本，无任何错误
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../core/constants/app_colors.dart';
+import '../core/l10n/app_localizations.dart';
+import '../core/premium/premium_provider.dart';
 import '../core/theme/theme_provider.dart';
+import 'premium_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -11,18 +15,43 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  final String _appVersion = '1.0.0+1';
+  String _appVersion = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _getVersion();
+  }
+
+  Future<void> _getVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (mounted) {
+        setState(() {
+          _appVersion = '${info.version}+${info.buildNumber}';
+        });
+      }
+    } catch (e) {
+      debugPrint('Error getting app version: $e');
+      if (mounted) {
+        setState(() {
+          _appVersion = '1.0.0+1';
+        });
+      }
+    }
+  }
 
   void _showContactDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('联系我们'),
-        content: const Text('如有任何问题或建议，请发送邮件至：support@pdfreader.com\n\n我们会尽快回复您的反馈。'),
+        title: Text(l10n.contactUs),
+        content: Text(l10n.contactEmail),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('确定'),
+            child: Text(l10n.confirm),
           ),
         ],
       ),
@@ -30,30 +59,52 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showPrivacyPolicy(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('隐私协议'),
-        content: const SingleChildScrollView(
+        title: Text(l10n.privacyTitle),
+        content: SingleChildScrollView(
           child: Text(
-            '隐私协议\n\n'
-                '本应用尊重并保护所有用户的隐私权益。请您仔细阅读以下内容：\n\n'
-                '🔒 数据本地化\n'
-                '本应用所有功能均完全离线运行，您的所有PDF文件、注释、书签等数据仅保存在您的设备本地。\n\n'
-                '📁 权限说明\n'
-                '应用仅需要存储权限，用于读取您设备上的PDF文件，并保存您对文件的修改。除此之外不会访问任何其他数据。\n\n'
-                '🚫 无数据收集\n'
-                '我们不会上传、收集或共享您的任何个人信息和文件数据到任何服务器。\n\n'
-                '🗑️ 数据删除\n'
-                '您随时可以卸载本应用，卸载后所有应用相关数据都会从您的设备上完全清除。\n\n'
-                '最后更新：2024年1月',
-            style: TextStyle(height: 1.6),
+            l10n.privacyContent,
+            style: const TextStyle(height: 1.6),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('我已知晓'),
+            child: Text(l10n.iKnow),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    final l10n = AppLocalizations.of(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.selectLanguage),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: AppLocalizations.supportedLocales.map((locale) {
+            final isSelected = ref.read(localeProvider).languageCode == locale.languageCode;
+            final languageName = AppLocalizations.languageNames[locale.languageCode] ?? locale.languageCode;
+            return ListTile(
+              title: Text(languageName),
+              trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+              onTap: () {
+                ref.read(localeProvider.notifier).setLocale(locale);
+                Navigator.pop(context);
+              },
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
           ),
         ],
       ),
@@ -62,23 +113,100 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final themeState = ref.watch(themeProvider);
     final isDark = themeState.isDarkMode;
+    final premiumState = ref.watch(premiumProvider);
+    final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置'),
+        title: Text(l10n.settings),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          // Premium 状态卡片
+          if (!premiumState.isPremium)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.premiumGold, AppColors.premiumGoldDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.workspace_premium, color: Colors.white, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(l10n.upgradeToPro, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        Text(l10n.unlockAllFeatures, style: TextStyle(color: Colors.white.withValues(alpha: 0.9), fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const PremiumScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.premiumGold,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    ),
+                    child: Text(l10n.upgradeNow, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            )
+          else
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.success.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: AppColors.success, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(l10n.proActivated, style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 14)),
+                          if (premiumState.expiryDate != null)
+                            Text(
+                              '${l10n.expiryDate}: ${premiumState.expiryDate!.year}-${premiumState.expiryDate!.month.toString().padLeft(2, '0')}-${premiumState.expiryDate!.day.toString().padLeft(2, '0')}',
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+            ),
+
           // 主题切换
           ListTile(
             leading: Icon(isDark ? Icons.light_mode : Icons.dark_mode, size: 28),
-            title: const Text('主题设置', style: TextStyle(fontSize: 16)),
+            title: Text(l10n.themeSettings),
             subtitle: Text(
-              isDark ? '深色模式' : '浅色模式',
-              style: const TextStyle(fontSize: 14),
+              isDark ? l10n.darkMode : l10n.lightMode,
             ),
             onTap: () {
               ref.read(themeProvider.notifier).toggleTheme();
@@ -86,33 +214,51 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
 
           const Divider(height: 1, thickness: 1),
+
+          // 语言切换
+          ListTile(
+            leading: const Icon(Icons.language, size: 28, color: Colors.orange),
+            title: Text(l10n.language),
+            subtitle: Text(AppLocalizations.languageNames[currentLocale.languageCode] ?? 'English'),
+            onTap: () => _showLanguageDialog(),
+          ),
+
+          const Divider(height: 1, thickness: 1),
           const SizedBox(height: 8),
 
           // 关于部分标题
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-            child: Text('关于', style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
+            child: Text(
+              l10n.about,
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
           ),
 
           // 联系我们
           ListTile(
             leading: const Icon(Icons.email, size: 28, color: Colors.blue),
-            title: const Text('联系我们', style: TextStyle(fontSize: 16)),
+            title: Text(l10n.contactUs),
             onTap: () => _showContactDialog(context),
           ),
 
           // 隐私协议
           ListTile(
             leading: const Icon(Icons.privacy_tip, size: 28, color: Colors.green),
-            title: const Text('隐私协议', style: TextStyle(fontSize: 16)),
+            title: Text(l10n.privacyPolicy),
             onTap: () => _showPrivacyPolicy(context),
           ),
 
           // 版本号
           ListTile(
             leading: const Icon(Icons.info, size: 28, color: Colors.purple),
-            title: const Text('版本号', style: TextStyle(fontSize: 16)),
-            subtitle: Text(_appVersion, style: const TextStyle(fontSize: 14)),
+            title: Text(l10n.version),
+            subtitle: Text(_appVersion.isEmpty ? l10n.loading : _appVersion),
           ),
 
           const SizedBox(height: 40),

@@ -1,21 +1,23 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/premium/premium_guard.dart';
 import '../services/pdf_service.dart';
 import '../services/pdf_edit_service.dart';
 
-class SplitScreen extends StatefulWidget {
+class SplitScreen extends ConsumerStatefulWidget {
   const SplitScreen({super.key});
 
   @override
-  State<SplitScreen> createState() => _SplitScreenState();
+  ConsumerState<SplitScreen> createState() => _SplitScreenState();
 }
 
-class _SplitScreenState extends State<SplitScreen> {
+class _SplitScreenState extends ConsumerState<SplitScreen> {
   File? _selectedFile;
   int _totalPages = 0;
   final _rangeController = TextEditingController();
@@ -34,20 +36,18 @@ class _SplitScreenState extends State<SplitScreen> {
   }
 
   Future<void> _split() async {
+    if (!await checkPremium(context, ref)) return;
     if (_selectedFile == null || _rangeController.text.isEmpty) return;
-    
-    // 保存 context 引用，避免 async gap 问题
+
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    
     setState(() => _isProcessing = true);
     final results = await PdfEditService.splitPdf(_selectedFile!, _rangeController.text);
     setState(() => _isProcessing = false);
-    
+
     if (results.isNotEmpty && mounted) {
-      // 获取输出目录
       final appDir = await getApplicationDocumentsDirectory();
       final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
-      
+
       scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Column(
@@ -83,13 +83,17 @@ class _SplitScreenState extends State<SplitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final canAccess = ref.watch(premiumProvider).canAccess('pdf_split');
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Split PDF', style: AppFonts.h3)),
+      appBar: AppBar(title: const Text('Split PDF')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (!canAccess)
+              _buildPremiumBanner(),
             SizedBox(
               width: double.infinity,
               height: 48,
@@ -134,6 +138,30 @@ class _SplitScreenState extends State<SplitScreen> {
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildPremiumBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.workspace_premium, color: AppColors.warning, size: 20),
+          const SizedBox(width: 8),
+          Expanded(child: Text('Premium功能，升级后可用', style: AppFonts.bodySmall.copyWith(color: AppColors.warning))),
+          TextButton(
+            onPressed: () => checkPremium(context, ref),
+            child: const Text('升级', style: TextStyle(color: AppColors.warning)),
+          ),
+        ],
       ),
     );
   }

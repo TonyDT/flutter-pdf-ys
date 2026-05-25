@@ -1,6 +1,7 @@
 // tools_screen.dart - 单列布局，所有文字完整显示
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../core/l10n/app_localizations.dart';
 import '../core/theme/theme_provider.dart';
 import 'add_annotation_screen.dart';
 import 'add_signature_screen.dart';
@@ -25,19 +26,19 @@ class ToolsScreen extends ConsumerStatefulWidget {
 class _ToolsScreenState extends ConsumerState<ToolsScreen> {
   void _navigateToFeature(BuildContext context, String featureName) {
     final featurePages = <String, Widget>{
-      '图片转PDF': const ImagesToPdfScreen(),
-      'PDF转长图': const PdfToLongImageScreen(),
-      'PDF转图片': const PdfToImagesScreen(),
-      '文本转PDF': const TextToPdfScreen(),
-      '编辑PDF文本': const EditPdfTextScreen(),
-      '添加文字': const AddTextScreen(),
-      '添加注释': const AddAnnotationScreen(),
-      '添加签名': const AddSignatureScreen(),
-      '合并PDF': const MergeScreen(),
-      '拆分PDF': const SplitScreen(),
-      '压缩PDF': const CompressScreen(),
-      '锁定PDF': const EncryptScreen(mode: EncryptMode.encrypt),
-      '解锁PDF': const EncryptScreen(mode: EncryptMode.decrypt),
+      'Images to PDF': const ImagesToPdfScreen(),
+      'PDF to Images': const PdfToImagesScreen(),
+      'PDF to Long Image': const PdfToLongImageScreen(),
+      'Text to PDF': const TextToPdfScreen(),
+      'Edit PDF Text': const EditPdfTextScreen(),
+      'Add Text': const AddTextScreen(),
+      'Add Annotation': const AddAnnotationScreen(),
+      'Add Signature': const AddSignatureScreen(),
+      'Merge PDF': const MergeScreen(),
+      'Split PDF': const SplitScreen(),
+      'Compress PDF': const CompressScreen(),
+      'Encrypt PDF': const EncryptScreen(mode: EncryptMode.encrypt),
+      'Decrypt PDF': const EncryptScreen(mode: EncryptMode.decrypt),
     };
 
     final page = featurePages[featureName];
@@ -46,43 +47,154 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
         MaterialPageRoute(builder: (context) => page),
       );
     } else {
+      final l10n = AppLocalizations.of(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$featureName 功能开发中，敬请期待...')),
+        SnackBar(content: Text('$featureName ${l10n.comingSoon}')),
       );
     }
   }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // 监听主题状态，获取当前是否为深色模式
     final isDark = ref.watch(themeProvider).isDarkMode;
 
-    // 完整的工具列表，全部中文显示
+    // 工具列表 - 使用英文key，根据语言显示对应文本
     final List<Map<String, dynamic>> tools = [
-      {'name': '图片转PDF', 'icon': Icons.image, 'color': Colors.blue, 'description': '将多张图片合并为PDF文件'},
-      {'name': 'PDF转图片', 'icon': Icons.photo_library, 'color': Colors.teal, 'description': '将PDF每一页导出为独立图片'},
-      {'name': 'PDF转长图', 'icon': Icons.view_column, 'color': Colors.cyan, 'description': '将所有页面拼接为一张长图'},
-      {'name': '文本转PDF', 'icon': Icons.text_fields, 'color': Colors.indigo, 'description': '将文本内容生成PDF文档'},
-      {'name': '编辑PDF文本', 'icon': Icons.edit_note, 'color': Colors.blueGrey, 'description': '编辑PDF文档中的文本内容'},
-      {'name': '添加文字', 'icon': Icons.add_comment, 'color': Colors.lightBlue, 'description': '在PDF页面上添加文字注释'},
-      {'name': '添加注释', 'icon': Icons.comment, 'color': Colors.amber, 'description': '在PDF中添加高亮、下划线等注释'},
-      {'name': '添加签名', 'icon': Icons.draw, 'color': Colors.deepOrange, 'description': '在PDF文档上添加手写签名'},
-      {'name': '合并PDF', 'icon': Icons.merge_type, 'color': Colors.green, 'description': '将多个PDF文件合并为一个文档'},
-      {'name': '拆分PDF', 'icon': Icons.call_split, 'color': Colors.lightGreen, 'description': '将一个PDF按页码拆分成多个文件'},
-      {'name': '压缩PDF', 'icon': Icons.compress, 'color': Colors.orange, 'description': '压缩PDF文件大小，节省存储空间'},
-      {'name': '锁定PDF', 'icon': Icons.lock, 'color': Colors.red, 'description': '给PDF文件添加密码加密保护'},
-      {'name': '解锁PDF', 'icon': Icons.lock_open, 'color': Colors.pink, 'description': '移除PDF文档的密码保护'},
+      {
+        'key': 'imagesToPDF',
+        'name_en': 'Images to PDF',
+        'name_zh': '图片转PDF',
+        'icon': Icons.image,
+        'color': Colors.blue,
+        'desc_en': 'Merge multiple images into a PDF file',
+        'desc_zh': '将多张图片合并为PDF文件',
+      },
+      {
+        'key': 'pdfToImages',
+        'name_en': 'PDF to Images',
+        'name_zh': 'PDF转图片',
+        'icon': Icons.photo_library,
+        'color': Colors.teal,
+        'desc_en': 'Export each page of PDF as separate images',
+        'desc_zh': '将PDF每一页导出为独立图片',
+      },
+      {
+        'key': 'pdfToLongImage',
+        'name_en': 'PDF to Long Image',
+        'name_zh': 'PDF转长图',
+        'icon': Icons.view_column,
+        'color': Colors.cyan,
+        'desc_en': 'Stitch all pages into one long image',
+        'desc_zh': '将所有页面拼接为一张长图',
+      },
+      {
+        'key': 'textToPdf',
+        'name_en': 'Text to PDF',
+        'name_zh': '文本转PDF',
+        'icon': Icons.text_fields,
+        'color': Colors.indigo,
+        'desc_en': 'Generate PDF document from text content',
+        'desc_zh': '将文本内容生成PDF文档',
+      },
+      {
+        'key': 'editPdfText',
+        'name_en': 'Edit PDF Text',
+        'name_zh': '编辑PDF文本',
+        'icon': Icons.edit_note,
+        'color': Colors.blueGrey,
+        'desc_en': 'Edit text content in PDF document',
+        'desc_zh': '编辑PDF文档中的文本内容',
+      },
+      {
+        'key': 'addText',
+        'name_en': 'Add Text',
+        'name_zh': '添加文字',
+        'icon': Icons.add_comment,
+        'color': Colors.lightBlue,
+        'desc_en': 'Add text annotations on PDF pages',
+        'desc_zh': '在PDF页面上添加文字注释',
+      },
+      {
+        'key': 'addAnnotation',
+        'name_en': 'Add Annotation',
+        'name_zh': '添加注释',
+        'icon': Icons.comment,
+        'color': Colors.amber,
+        'desc_en': 'Add highlights, underlines and other annotations',
+        'desc_zh': '在PDF中添加高亮、下划线等注释',
+      },
+      {
+        'key': 'addSignature',
+        'name_en': 'Add Signature',
+        'name_zh': '添加签名',
+        'icon': Icons.draw,
+        'color': Colors.deepOrange,
+        'desc_en': 'Add handwritten signature to PDF document',
+        'desc_zh': '在PDF文档上添加手写签名',
+      },
+      {
+        'key': 'mergePdf',
+        'name_en': 'Merge PDF',
+        'name_zh': '合并PDF',
+        'icon': Icons.merge_type,
+        'color': Colors.green,
+        'desc_en': 'Merge multiple PDF files into one document',
+        'desc_zh': '将多个PDF文件合并为一个文档',
+      },
+      {
+        'key': 'splitPdf',
+        'name_en': 'Split PDF',
+        'name_zh': '拆分PDF',
+        'icon': Icons.call_split,
+        'color': Colors.lightGreen,
+        'desc_en': 'Split a PDF into multiple files by page number',
+        'desc_zh': '将一个PDF按页码拆分成多个文件',
+      },
+      {
+        'key': 'compressPdf',
+        'name_en': 'Compress PDF',
+        'name_zh': '压缩PDF',
+        'icon': Icons.compress,
+        'color': Colors.orange,
+        'desc_en': 'Compress PDF file size to save storage space',
+        'desc_zh': '压缩PDF文件大小，节省存储空间',
+      },
+      {
+        'key': 'encryptPdf',
+        'name_en': 'Encrypt PDF',
+        'name_zh': '锁定PDF',
+        'icon': Icons.lock,
+        'color': Colors.red,
+        'desc_en': 'Add password encryption to PDF file',
+        'desc_zh': '给PDF文件添加密码加密保护',
+      },
+      {
+        'key': 'decryptPdf',
+        'name_en': 'Decrypt PDF',
+        'name_zh': '解锁PDF',
+        'icon': Icons.lock_open,
+        'color': Colors.pink,
+        'desc_en': 'Remove password protection from PDF document',
+        'desc_zh': '移除PDF文档的密码保护',
+      },
     ];
 
     // 单列布局，每排只有1个，确保所有文字都完整显示
     return Scaffold(
       appBar: AppBar(
-        title: const Text('PDF工具'),
+        title: Text(l10n.pdfTools),
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: tools.length,
         itemBuilder: (context, index) {
           final tool = tools[index];
+          final isChinese = l10n.isChinese;
+          final name = isChinese ? tool['name_zh'] : tool['name_en'];
+          final desc = isChinese ? tool['desc_zh'] : tool['desc_en'];
+          
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 2,
@@ -101,7 +213,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
                 child: Icon(tool['icon'], color: tool['color'], size: 32),
               ),
               title: Text(
-                tool['name'],
+                name,
                 style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -111,7 +223,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
               subtitle: Padding(
                 padding: const EdgeInsets.only(top: 6),
                 child: Text(
-                  tool['description'],
+                  desc,
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.4,
@@ -120,7 +232,7 @@ class _ToolsScreenState extends ConsumerState<ToolsScreen> {
                 ),
               ),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-              onTap: () => _navigateToFeature(context, tool['name']),
+              onTap: () => _navigateToFeature(context, tool['name_en']),
             ),
           );
         },

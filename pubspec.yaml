@@ -1,7 +1,7 @@
 name: flutter_pdf
 description: "ZeronPDF"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.1+2
 
 environment:
   sdk: ^3.6.2
@@ -45,6 +45,13 @@ dependencies:
   # Encryption
   encrypt: ^5.0.3
   crypto: ^3.0.6
+
+  # In-app purchase
+  in_app_purchase: ^3.1.13
+  url_launcher: ^6.3.1
+
+  # App info
+  package_info_plus: ^8.1.0
 
 dev_dependencies:
   flutter_test:

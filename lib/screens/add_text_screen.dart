@@ -69,7 +69,7 @@ class _AddTextScreenState extends State<AddTextScreen> {
         await outputDir.create(recursive: true);
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final file = File(p.join(outputDir.path, 'added_text_${timestamp}.pdf'));
+      final file = File(p.join(outputDir.path, 'added_text_$timestamp.pdf'));
       await file.writeAsBytes(newBytes);
 
       if (mounted) {

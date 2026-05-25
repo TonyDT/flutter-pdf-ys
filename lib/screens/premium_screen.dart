@@ -1,24 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../core/premium/premium_provider.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
 
-class PremiumScreen extends ConsumerWidget {
+class PremiumScreen extends ConsumerStatefulWidget {
   const PremiumScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PremiumScreen> createState() => _PremiumScreenState();
+}
+
+class _PremiumScreenState extends ConsumerState<PremiumScreen> {
+  ProductDetails? _product;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProduct();
+  }
+
+  Future<void> _loadProduct() async {
+    final product = await ref.read(premiumProvider.notifier).getProductDetails();
+    setState(() {
+      _product = product;
+      _loading = false;
+    });
+  }
+
+  String _formatPrice(ProductDetails product) {
+    // 显示本地化价格
+    return product.price;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final premiumState = ref.watch(premiumProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('升级Pro', style: AppFonts.h3),
+        title: Text(l10n.upgradeToPro, style: AppFonts.h3),
         backgroundColor: AppColors.surface,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          // 恢复购买按钮
+          TextButton(
+            onPressed: premiumState.isPending
+                ? null
+                : () async {
+                    await ref.read(premiumProvider.notifier).restorePurchases();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(l10n.restorePurchase),
+                          backgroundColor: AppColors.info,
+                        ),
+                      );
+                    }
+                  },
+            child: Text(l10n.restorePurchase, style: const TextStyle(color: AppColors.primary)),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -42,23 +92,23 @@ class PremiumScreen extends ConsumerWidget {
               child: const Icon(Icons.workspace_premium, color: Colors.white, size: 50),
             ),
             const SizedBox(height: 24),
-            Text('PDF阅读器 Pro', style: AppFonts.h1.copyWith(color: AppColors.textPrimary)),
+            Text('ZeronPDF Pro', style: AppFonts.h1.copyWith(color: AppColors.textPrimary)),
             const SizedBox(height: 8),
-            Text('解锁全部高级功能', style: AppFonts.bodyLarge.copyWith(color: AppColors.textSecondary)),
+            Text(l10n.unlockAllFeatures, style: AppFonts.bodyLarge.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 32),
 
             // Feature list
-            _buildFeatureItem(Icons.highlight, 'Annotations', 'Highlight, strikethrough & notes'),
+            _buildFeatureItem(Icons.highlight, l10n.featureAnnotation, l10n.featureAnnotation),
             const SizedBox(height: 16),
-            _buildFeatureItem(Icons.call_split, 'Split & Reorder', 'Extract pages, reorder & delete'),
+            _buildFeatureItem(Icons.call_split, l10n.featureSplit, l10n.featureSplit),
             const SizedBox(height: 16),
-            _buildFeatureItem(Icons.compress, 'Compress', 'Reduce PDF file size offline'),
+            _buildFeatureItem(Icons.compress, l10n.compressPDF, l10n.featureCompress),
             const SizedBox(height: 16),
-            _buildFeatureItem(Icons.lock, 'Encrypt', 'Password protect your PDFs'),
+            _buildFeatureItem(Icons.lock, l10n.encryptPDF, l10n.featureEncrypt),
             const SizedBox(height: 16),
-            _buildFeatureItem(Icons.photo_library, 'Image to PDF', 'Convert images to PDF'),
+            _buildFeatureItem(Icons.photo_library, l10n.imagesToPDF, l10n.featureImageToPdf),
             const SizedBox(height: 16),
-            _buildFeatureItem(Icons.cloud_off, 'Fully Offline', 'All processing done locally'),
+            _buildFeatureItem(Icons.cloud_off, l10n.featureOffline, l10n.featureOffline),
             const SizedBox(height: 40),
 
             // 价格卡片
@@ -70,32 +120,48 @@ class PremiumScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Text('年度会员', style: AppFonts.h3),
+                  Text(l10n.lifetimeSubscription, style: AppFonts.h3),
                   const SizedBox(height: 8),
-                  const Text('¥68/年', style: TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                  const SizedBox(height: 4),
-                  Text('约¥5.7/月', style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  if (_loading)
+                    const SizedBox(
+                      height: 40,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  else if (_product != null) ...[
+                    Text(_formatPrice(_product!), style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    const SizedBox(height: 4),
+                    Text(l10n.lifetimeSubscription, style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  ] else ...[
+                    Text('--', style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                    const SizedBox(height: 4),
+                    Text(l10n.comingSoon, style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
+                  ],
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: premiumState.isPremium ? null : () async {
-                        // 模拟购买流程
-                        await ref.read(premiumProvider.notifier).activatePremium();
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('🎉 恭喜！已成功升级Pro'),
-                              backgroundColor: AppColors.success,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
-                          Navigator.pop(context);
-                        }
-                      },
+                      onPressed: premiumState.isPremium || premiumState.isPending
+                          ? null
+                          : () async {
+                              if (_product != null) {
+                                await ref.read(premiumProvider.notifier).purchase(_product!);
+                              } else {
+                                // 内购未配置时，提示用户
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(l10n.comingSoon),
+                                      backgroundColor: AppColors.warning,
+                                    ),
+                                  );
+                                }
+                              }
+                            },
                       style: AppStyles.primaryButton,
-                      child: Text(premiumState.isPremium ? '已是Pro会员' : '立即升级', style: AppFonts.button),
+                      child: premiumState.isPending
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Text(premiumState.isPremium ? l10n.alreadyPro : l10n.upgradeNow, style: AppFonts.button),
                     ),
                   ),
                 ],
@@ -112,27 +178,53 @@ class PremiumScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
-                  children: [
-                    const Icon(Icons.check_circle, color: AppColors.success),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Pro会员已激活', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
-                          if (premiumState.expiryDate != null)
-                            Text('到期时间: ${premiumState.expiryDate!.year}-${premiumState.expiryDate!.month}-${premiumState.expiryDate!.day}',
-                                style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
-                        ],
+                    children: [
+                      const Icon(Icons.check_circle, color: AppColors.success),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(l10n.proActivated, style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w600)),
+                            if (premiumState.expiryDate != null)
+                              Text('${l10n.expiryDate}: ${premiumState.expiryDate!.year}-${premiumState.expiryDate!.month.toString().padLeft(2, '0')}-${premiumState.expiryDate!.day.toString().padLeft(2, '0')}',
+                                  style: AppFonts.bodySmall.copyWith(color: AppColors.textSecondary)),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                    ],
+                  ),
               ),
             ],
 
             const SizedBox(height: 24),
-            Text('支付后立即生效，可随时取消续费', style: AppFonts.bodySmall.copyWith(color: AppColors.textHint)),
+            Text(l10n.featureOffline, style: AppFonts.bodySmall.copyWith(color: AppColors.textHint)),
+            const SizedBox(height: 12),
+            // 隐私政策和使用条款链接
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final uri = Uri.parse('https://zeronpdf.com/privacy');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Text(l10n.privacyPolicy, style: const TextStyle(fontSize: 12)),
+                ),
+                const Text('•', style: TextStyle(color: AppColors.textHint)),
+                TextButton(
+                  onPressed: () async {
+                    final uri = Uri.parse('https://zeronpdf.com/terms');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  child: Text(l10n.premiumRequired, style: const TextStyle(fontSize: 12)),
+                ),
+              ],
+            ),
           ],
         ),
       ),
