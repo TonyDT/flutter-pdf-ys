@@ -1,9 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Google Play Billing Permission -->
     <uses-permission android:name="com.android.vending.BILLING" />
+    <!-- Query all packages for app scanning -->
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!-- Storage permissions for saving report to gallery -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:label="ZeronPDF-OffVault"
+        android:label="GPTesting"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

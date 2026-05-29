@@ -1,4 +1,4 @@
-package com.dt.pdf.flutter_pdf
+package com.dt.gptesting
 
 import io.flutter.embedding.android.FlutterActivity
 

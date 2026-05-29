@@ -1,7 +1,7 @@
-name: flutter_pdf
-description: "ZeronPDF"
+name: gptesting
+description: "Google Play 12+14 Day Testing Assistant"
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.0.0+1
 
 environment:
   sdk: ^3.6.2
@@ -12,46 +12,27 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
-  # PDF rendering & manipulation
-  syncfusion_flutter_pdfviewer: ^27.1.48
-  syncfusion_flutter_pdf: ^27.1.48
-  
-  # PDF rendering to images
-  pdf_render: ^1.1.28
-
-  # State management
+  # 基础工具
   flutter_riverpod: ^2.6.1
-
-  # Local persistence
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-
-  # File picking
-  file_picker: ^8.0.0
-
-  # Image processing
-  image: ^4.2.0
-
-  # Path utilities
   path_provider: ^2.1.4
   path: ^1.9.0
-
-  # UI utilities
-  flutter_spinkit: ^5.2.1
+  package_info_plus: ^8.1.0
+  url_launcher: ^6.3.1
   share_plus: ^9.0.0
 
+  # 应用管理
+  installed_apps: ^1.0.2
 
-
-  # Encryption
-  encrypt: ^5.0.3
-  crypto: ^3.0.6
-
-  # In-app purchase
-  in_app_purchase: ^3.1.13
-  url_launcher: ^6.3.1
-
-  # App info
-  package_info_plus: ^8.1.0
+  # UI 增强
+  flutter_spinkit: ^5.2.1
+  intl: ^0.19.0
+  http: ^1.6.0
+  screenshot: ^3.0.0
+  # 使用兼容 AGP 8.0 的版本替换 image_gallery_saver
+  saver_gallery: ^3.0.1
+  permission_handler: ^12.0.2
 
 dev_dependencies:
   flutter_test:
