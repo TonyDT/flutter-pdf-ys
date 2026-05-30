@@ -1,7 +1,7 @@
 name: gptesting
 description: "Google Play 12+14 Day Testing Assistant"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+2
 
 environment:
   sdk: ^3.6.2
@@ -33,6 +33,7 @@ dependencies:
   # 使用兼容 AGP 8.0 的版本替换 image_gallery_saver
   saver_gallery: ^3.0.1
   permission_handler: ^12.0.2
+  device_info_plus: ^10.1.2
 
 dev_dependencies:
   flutter_test:

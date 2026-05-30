@@ -19,8 +19,13 @@ class TestApp {
 
   bool get isCheckInToday {
     final now = DateTime.now();
-    return checkInDates.any((d) =>
-        d.year == now.year && d.month == now.month && d.day == now.day);
+    // 强制使用本地时间并只比较年月日
+    return checkInDates.any((d) {
+      final localD = d.toLocal();
+      return localD.year == now.year && 
+             localD.month == now.month && 
+             localD.day == now.day;
+    });
   }
 
   Map<String, dynamic> toMap() {

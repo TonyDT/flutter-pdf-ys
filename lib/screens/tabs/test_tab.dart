@@ -189,7 +189,7 @@ class TestTab extends ConsumerWidget {
                                     color: Colors.green[50],
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Text('今日已读', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                                  child: const Text('已测', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
                                 )
                               else
                                 const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
