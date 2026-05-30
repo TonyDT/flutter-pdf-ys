@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:installed_apps/installed_apps.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:share_plus/share_plus.dart';
 import '../../providers/app_provider.dart';
 import '../../models/test_app.dart';
+import '../../core/widgets/day_progress_bar.dart';
 
 class TestTab extends ConsumerWidget {
   const TestTab({super.key});
@@ -27,31 +26,6 @@ class TestTab extends ConsumerWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.copy),
-              title: const Text('复制包名'),
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: app.packageName));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已复制包名')));
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text('应用信息'),
-              onTap: () {
-                InstalledApps.openSettings(app.packageName);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.share),
-              title: const Text('分享测试信息'),
-              onTap: () {
-                Share.share('正在测试应用：${app.name}\n包名：${app.packageName}\n已测试 ${app.testDays}/14 天');
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.stop, color: Colors.red),
               title: const Text('停止测试', style: TextStyle(color: Colors.red)),
               onTap: () {
@@ -68,22 +42,30 @@ class TestTab extends ConsumerWidget {
   Future<void> _handleAppTap(BuildContext context, WidgetRef ref, TestApp app) async {
     final notifier = ref.read(appProvider.notifier);
 
-    // 1. 立即启动应用并记录打卡，保证“点一下就跳”
-    InstalledApps.startApp(app.packageName);
-    notifier.checkIn(app);
+    // 显示检查中的状态
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
 
-    // 2. 异步检查是否上线（不阻塞启动过程）
-    // 采用“静默检查”，如果检测到上线，下次点击或返回时会提示
-    notifier.checkIfAppIsOnline(app.packageName).then((isOnline) {
-      if (isOnline && context.mounted) {
-        // 如果已经上线，弹窗提醒用户（通常用户从测试应用返回后会看到）
+    // 判断是否已经上线
+    final isOnline = await notifier.checkIfAppIsOnline(app.packageName);
+    
+    if (context.mounted) Navigator.pop(context); // 关闭加载
+
+    if (isOnline) {
+      if (context.mounted) {
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('发现应用已上线'),
-            content: Text('应用“${app.name}”已在 Google Play 商店检测到。\n建议停止 14 天封闭测试。'),
+            title: const Text('提示'),
+            content: Text('检测到应用“${app.name}”已上线，请停止打卡。'),
             actions: [
-              TextButton(onPressed: () => Navigator.pop(context), child: const Text('确定')),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('知道了'),
+              ),
               TextButton(
                 onPressed: () {
                   notifier.removeApp(app.packageName);
@@ -95,7 +77,11 @@ class TestTab extends ConsumerWidget {
           ),
         );
       }
-    });
+    } else {
+      // 未上线，正常打卡
+      await InstalledApps.startApp(app.packageName);
+      await notifier.checkIn(app);
+    }
   }
 
   @override
@@ -137,7 +123,6 @@ class TestTab extends ConsumerWidget {
               itemCount: state.testingApps.length,
               itemBuilder: (context, index) {
                 final app = state.testingApps[index];
-                final progress = app.testDays / 14.0;
 
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
@@ -178,7 +163,7 @@ class TestTab extends ConsumerWidget {
                                   children: [
                                     Text(app.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                                     const SizedBox(height: 4),
-                                    Text('进度: ${app.testDays}/14 天', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
+                                    Text('已测: ${app.testDays} 天', style: TextStyle(color: Colors.grey[600], fontSize: 13)),
                                   ],
                                 ),
                               ),
@@ -195,16 +180,8 @@ class TestTab extends ConsumerWidget {
                                 const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                             ],
                           ),
-                          const SizedBox(height: 14),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(4),
-                            child: LinearProgressIndicator(
-                              value: progress > 1 ? 1 : progress,
-                              minHeight: 8,
-                              backgroundColor: Colors.grey[100],
-                              valueColor: AlwaysStoppedAnimation<Color>(progress >= 1 ? Colors.green : Colors.blue),
-                            ),
-                          ),
+                          const SizedBox(height: 16),
+                          DayProgressBar(days: app.testDays),
                         ],
                       ),
                     ),

@@ -7,7 +7,10 @@ import 'package:saver_gallery/saver_gallery.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/app_provider.dart';
+import '../core/widgets/day_progress_bar.dart';
 
 class ShareScreen extends ConsumerStatefulWidget {
   const ShareScreen({super.key});
@@ -18,6 +21,22 @@ class ShareScreen extends ConsumerStatefulWidget {
 
 class _ShareScreenState extends ConsumerState<ShareScreen> {
   final ScreenshotController _screenshotController = ScreenshotController();
+  String _packageName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _initPackageInfo();
+  }
+
+  Future<void> _initPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _packageName = info.packageName;
+      });
+    }
+  }
 
   /// 弹出预览并保存的弹窗
   void _showPreviewAndSave(Uint8List imageBytes) {
@@ -110,7 +129,6 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
           }
         }
       } else {
-        // 权限被拒绝或永久拒绝
         if (mounted) {
           _showPermissionDialog();
         }
@@ -128,7 +146,6 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
   /// 点击右上角按钮：仅生成预览，不涉及权限
   Future<void> _handleShareButtonClick() async {
     try {
-      // 1. 显示加载提示
       if (mounted) {
         showDialog(
           context: context,
@@ -137,14 +154,13 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
         );
       }
 
-      // 2. 生成预览图片
       await Future.delayed(const Duration(milliseconds: 300));
       
       final Uint8List? image = await _screenshotController.capture(
         pixelRatio: 2.0,
       );
 
-      if (mounted) Navigator.pop(context); // 关闭加载提示
+      if (mounted) Navigator.pop(context);
 
       if (image != null) {
         if (mounted) _showPreviewAndSave(image);
@@ -189,19 +205,20 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(appProvider);
     final todayStr = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final playStoreUrl = 'https://play.google.com/store/apps/details?id=$_packageName';
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('分享报告', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('报告中心', style: TextStyle(fontWeight: FontWeight.bold)),
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.download_rounded, color: Colors.blue, size: 28),
+            icon: const Icon(Icons.download_rounded, color: Colors.blue, size: 30),
             onPressed: _handleShareButtonClick,
             tooltip: '生成预览',
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 16),
         ],
       ),
       body: SingleChildScrollView(
@@ -211,8 +228,13 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
               controller: _screenshotController,
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(color: Colors.white),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5)),
+                  ],
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,21 +244,21 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                         children: [
                           Text(
                             todayStr,
-                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.blue),
+                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.blue),
                           ),
                         ],
                       ),
                     ),
                     const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 20),
+                      padding: EdgeInsets.symmetric(vertical: 10),
                       child: Divider(height: 1, thickness: 1.5),
                     ),
                     const Text('打卡详情清单', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black38)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
                     if (state.testingApps.isEmpty)
                       const Center(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 30),
+                          padding: EdgeInsets.symmetric(vertical: 10),
                           child: Text('暂无测试数据', style: TextStyle(color: Colors.grey, fontSize: 14)),
                         ),
                       )
@@ -245,16 +267,16 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          mainAxisExtent: 120,
+                          crossAxisCount: 3,
+                          crossAxisSpacing: 4,
+                          mainAxisSpacing: 4,
+                          mainAxisExtent: 120, // 增加高度以容纳方块进度条
                         ),
                         itemCount: state.testingApps.length,
                         itemBuilder: (context, index) {
                           final app = state.testingApps[index];
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                             decoration: BoxDecoration(
                               color: Colors.grey[50],
                               borderRadius: BorderRadius.circular(12),
@@ -270,10 +292,10 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
                                       child: app.icon != null
-                                          ? Image.memory(app.icon!, width: 48, height: 48, fit: BoxFit.cover)
-                                          : const Icon(Icons.android, color: Colors.green, size: 36),
+                                          ? Image.memory(app.icon!, width: 40, height: 40, fit: BoxFit.cover)
+                                          : const Icon(Icons.android, color: Colors.green, size: 20),
                                     ),
-                                    const SizedBox(width: 6),
+                                    const SizedBox(width: 4),
                                     Column(
                                       children: [
                                         Text(
@@ -282,7 +304,7 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                                             fontSize: 12,
                                             height: 1.1,
                                             color: app.isCheckInToday ? Colors.green[700] : Colors.red[700],
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                         Text(
@@ -291,32 +313,55 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
                                             fontSize: 12,
                                             height: 1.1,
                                             color: app.isCheckInToday ? Colors.green[700] : Colors.red[700],
-                                            fontWeight: FontWeight.w600,
+                                            fontWeight: FontWeight.w800,
                                           ),
                                         ),
                                       ],
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 Text(
                                   app.name,
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
-                                  maxLines: 2,
-                                  softWrap: true,
+                                  maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   textAlign: TextAlign.center,
                                 ),
+                                const SizedBox(height: 10),
+                                // 14个小方块进度条
+                                DayProgressBar(days: app.testDays, blockHeight: 5, spacing: 2),
                               ],
                             ),
                           );
                         },
                       ),
                     
+                    const SizedBox(height: 20),
+                    // 二维码部分
+                    // if (_packageName.isNotEmpty)
+                    //   Center(
+                    //     child: Column(
+                    //       children: [
+                    //         const Divider(),
+                    //         const SizedBox(height: 10),
+                    //         const Text('扫描二维码下载最新版本', style: TextStyle(fontSize: 12, color: Colors.blueGrey, fontWeight: FontWeight.bold)),
+                    //         const SizedBox(height: 10),
+                    //         QrImageView(
+                    //           data: playStoreUrl,
+                    //           version: QrVersions.auto,
+                    //           size: 100.0,
+                    //           backgroundColor: Colors.white,
+                    //         ),
+                    //
+                    //       ],
+                    //     ),
+                    //   ),
+
                     const SizedBox(height: 40),
                     const Center(
                       child: Column(
@@ -332,16 +377,26 @@ class _ShareScreenState extends ConsumerState<ShareScreen> {
               ),
             ),
             const SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40),
-              child: Text(
-                '提示：保存后的图片将存放在相册的 GPTesting 文件夹中。',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey[500], fontSize: 12),
-              ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.1)),
+      ),
+      child: Column(
+        children: [
+          Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: color)),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 12, color: color.withOpacity(0.8), fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }

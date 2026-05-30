@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../share_screen.dart';
+import '../privacy_policy_screen.dart';
 
 class SettingsTab extends StatefulWidget {
   const SettingsTab({super.key});
@@ -38,9 +39,11 @@ class _SettingsTabState extends State<SettingsTab> {
           ListTile(
             leading: const Icon(Icons.privacy_tip_outlined),
             title: const Text('隐私政策'),
-            onTap: () async {
-              final url = Uri.parse('https://your-privacy-policy-url.com');
-              if (await canLaunchUrl(url)) await launchUrl(url);
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+              );
             },
           ),
           ListTile(

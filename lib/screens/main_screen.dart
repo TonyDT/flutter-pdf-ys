@@ -49,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               NavigationRailDestination(
                 icon: Icon(Icons.share),
-                label: Text('分享'),
+                label: Text('报告'),
               ),
             ],
           ),

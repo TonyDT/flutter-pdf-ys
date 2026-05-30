@@ -51,14 +51,26 @@ class AppNotifier extends StateNotifier<AppState> {
       }
       return TestApp.fromMap(map);
     }).toList();
+    
+    // 2. 测试中心排序：最后添加的在最顶上
+    _sortAndSetTestingApps(apps);
+  }
+
+  void _sortAndSetTestingApps(List<TestApp> apps) {
+    apps.sort((a, b) => b.addedDate.compareTo(a.addedDate));
     state = state.copyWith(testingApps: apps);
   }
 
   Future<void> scanApps() async {
     state = state.copyWith(isLoading: true);
     try {
-      // 快速扫描本地所有应用，不再进行在线状态检查
+      // 快速扫描本地所有应用
       List<AppInfo> apps = await InstalledApps.getInstalledApps(true, true);
+      
+      // 1. 应用库排序：虽然插件不直接提供安装时间，但通常系统返回的顺序可以优化
+      // 我们将其按名称排序作为基础，或者如果有安装时间字段再优化
+      apps.sort((a, b) => a.name.compareTo(b.name));
+      
       state = state.copyWith(installedApps: apps, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
@@ -73,7 +85,7 @@ class AppNotifier extends StateNotifier<AppState> {
       ).timeout(const Duration(seconds: 2));
       return response.statusCode == 200;
     } catch (e) {
-      return false; // 无法检查或网络错误时默认认为没上线
+      return false; 
     }
   }
 
@@ -88,7 +100,7 @@ class AppNotifier extends StateNotifier<AppState> {
       icon: app.icon,
     );
 
-    final updatedList = [...state.testingApps, newApp];
+    final updatedList = [newApp, ...state.testingApps]; // 直接插入到最前面
     await _saveToHive(updatedList);
     state = state.copyWith(testingApps: updatedList);
   }
