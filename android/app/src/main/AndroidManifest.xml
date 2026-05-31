@@ -1,6 +1,5 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Google Play Billing Permission -->
-    <uses-permission android:name="com.android.vending.BILLING" />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.dt.GPTesting">
     <!-- Query all packages for app scanning -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <!-- Storage permissions for saving report to gallery -->
@@ -43,10 +42,6 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <!-- OCR ML Kit 元数据 -->
-        <meta-data
-            android:name="com.google.mlkit.vision.DEPENDENCIES"
-            android:value="ocr" />
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

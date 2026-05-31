@@ -1,0 +1,91 @@
+
+{
+  "@@locale": "en",
+  "appName": "GPTesting",
+  "tabApps": "Apps",
+  "tabTest": "Testing",
+  "tabSettings": "Settings",
+  "tabReport": "Report",
+  "appsTitle": "App Library",
+  "appsSearchHint": "Search apps...",
+  "appsNoScanned": "No apps scanned yet",
+  "appsScanButton": "Scan Apps",
+  "appsTested": "Tested",
+  "appsTest": "Test",
+  "testTitle": "Testing Center",
+  "testEmpty": "No testing apps",
+  "testDays": "Tested: {days} days",
+  "@testDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "testCheckedIn": "Done",
+  "testViewStore": "View Store",
+  "testStopTesting": "Stop Testing",
+  "testDialogTitle": "Notice",
+  "testDialogOnline": "App \"{name}\" is now live. Please stop testing.",
+  "@testDialogOnline": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "testDialogGotIt": "Got it",
+  "testDialogStopNow": "Stop Now",
+  "settingsTitle": "Settings",
+  "settingsVersion": "Version Info",
+  "settingsPrivacy": "Privacy Policy",
+  "settingsCheckUpdate": "Check for Updates",
+  "settingsUpToDate": "Already up to date",
+  "settingsFooter": "GPTesting - Designed for Google Play 12+14 day testing.",
+  "reportTitle": "Report Center",
+  "reportPreviewTitle": "Report Preview",
+  "reportPreviewHint": "Confirm and tap below to save to gallery",
+  "reportCancel": "Cancel",
+  "reportSaveToGallery": "Save to Gallery",
+  "reportSaveSuccess": "🎉 Report saved to gallery",
+  "reportSaveFail": "❌ Save failed, please check storage",
+  "reportGenerateFail": "Failed to generate report, please retry",
+  "reportGenerateError": "Error: {error}",
+  "@reportGenerateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reportNoData": "No testing data",
+  "reportCheckInDetail": "Check-in Details",
+  "reportStatusDone": "✓",
+  "reportStatusPending": "○",
+  "reportPermissionTitle": "Photo Access Required",
+  "reportPermissionContent": "To save the report to your gallery, please grant photo access permission.\n\nIf the system dialog doesn't appear, go to Settings → Permissions to enable it manually.",
+  "reportPermissionGoSettings": "Go to Settings",
+  "privacyTitle": "Privacy Policy",
+  "privacyHeader": "GPTesting Privacy Policy",
+  "privacyEffectiveDate": "Effective Date: {year}/{month}/{day}",
+  "@privacyEffectiveDate": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" },
+      "day": { "type": "int" }
+    }
+  },
+  "privacySection1Title": "1. Information We Collect",
+  "privacySection1Content": "GPTesting is a purely local tool. We do not collect any personal identity information.\n• App List: To help you with Google Play testing, we need to access your installed apps. This data is only used for display and check-in within the app, and is never uploaded to any server.\n• Check-in Records: Your test check-in times are stored locally on your device.",
+  "privacySection2Title": "2. Permission Usage",
+  "privacySection2Content": "To implement core features, we require the following permissions:\n• QUERY_ALL_PACKAGES: To scan installed test apps on your device.\n• Storage/Photo Permission: To save generated report images to your gallery.\n• Network Permission: Only used to check if an app is live on Google Play Store. No personal data is uploaded.",
+  "privacySection3Title": "3. Data Storage & Security",
+  "privacySection3Content": "All data (app icons, check-in times, etc.) is stored locally on your device. When you uninstall this app, all related data will be deleted. We do not have a central server to store your data.",
+  "privacySection4Title": "4. Third-Party Services",
+  "privacySection4Content": "This app may contain links to Google Play Store. These third-party websites have their own privacy policies. Please review them when using.",
+  "privacySection5Title": "5. Policy Updates",
+  "privacySection5Content": "We may update this privacy policy from time to time. We recommend reviewing this page periodically.",
+  "privacySection6Title": "6. Contact Us",
+  "privacySection6Content": "If you have any questions about this privacy policy, please contact us at:\nEmail: xinyoushanhai888@gmail.com",
+  "privacyFooter": "GPTesting Team"
+}

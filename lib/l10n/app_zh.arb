@@ -1,0 +1,91 @@
+
+{
+  "@@locale": "zh",
+  "appName": "GPTesting",
+  "tabApps": "应用",
+  "tabTest": "测试",
+  "tabSettings": "设置",
+  "tabReport": "报告",
+  "appsTitle": "应用库",
+  "appsSearchHint": "快速搜索本地应用...",
+  "appsNoScanned": "尚未扫描应用",
+  "appsScanButton": "扫描手机应用",
+  "appsTested": "已测",
+  "appsTest": "测试",
+  "testTitle": "测试中心",
+  "testEmpty": "暂无测试应用",
+  "testDays": "已测: {days} 天",
+  "@testDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "testCheckedIn": "已测",
+  "testViewStore": "查看商店",
+  "testStopTesting": "停止测试",
+  "testDialogTitle": "提示",
+  "testDialogOnline": "检测到应用\"{name}\"已上线，请停止打卡。",
+  "@testDialogOnline": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "testDialogGotIt": "知道了",
+  "testDialogStopNow": "立即停止",
+  "settingsTitle": "设置",
+  "settingsVersion": "版本信息",
+  "settingsPrivacy": "隐私政策",
+  "settingsCheckUpdate": "检查更新",
+  "settingsUpToDate": "当前已是最新版本",
+  "settingsFooter": "GPTesting - 专为 Google Play 12+14 天互测设计。",
+  "reportTitle": "报告中心",
+  "reportPreviewTitle": "报告预览",
+  "reportPreviewHint": "确认无误后点击下方按钮保存到相册",
+  "reportCancel": "取消",
+  "reportSaveToGallery": "保存到相册",
+  "reportSaveSuccess": "🎉 报告已成功保存到相册",
+  "reportSaveFail": "❌ 保存失败，请检查相册空间",
+  "reportGenerateFail": "生成报告失败，请重试",
+  "reportGenerateError": "发生错误: {error}",
+  "@reportGenerateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "reportNoData": "暂无测试数据",
+  "reportCheckInDetail": "打卡详情清单",
+  "reportStatusDone": "已",
+  "reportStatusPending": "待",
+  "reportPermissionTitle": "需要照片访问权限",
+  "reportPermissionContent": "为了将报告保存到相册，请授予应用访问相册的权限。\n\n如果系统未弹出授权框，请前往\"设置 → 权限\"中手动开启。",
+  "reportPermissionGoSettings": "去设置",
+  "privacyTitle": "隐私政策",
+  "privacyHeader": "GPTesting 隐私政策",
+  "privacyEffectiveDate": "生效日期：{year}年{month}月{day}日",
+  "@privacyEffectiveDate": {
+    "placeholders": {
+      "year": { "type": "int" },
+      "month": { "type": "int" },
+      "day": { "type": "int" }
+    }
+  },
+  "privacySection1Title": "1. 我们收集的信息",
+  "privacySection1Content": "GPTesting 是一款纯本地运行的工具软件。我们不会收集您的任何个人身份信息。\n• 应用列表：为了帮助您进行 Google Play 测试，我们需要获取您设备上安装的应用列表。此数据仅用于在应用内展示并协助您打卡，绝不会上传至任何服务器。\n• 打卡记录：您的测试打卡时间记录存储在您手机本地的数据库中。",
+  "privacySection2Title": "2. 权限使用说明",
+  "privacySection2Content": "为了实现核心功能，我们需要以下权限：\n• QUERY_ALL_PACKAGES（查询所有包）：用于扫描您手机上安装的测试应用。\n• 存储/照片权限：用于将生成的测试报告图片保存到您的手机相册中。\n• 联网权限：仅用于检查应用是否在 Google Play 商店上线，不会上传您的个人数据。",
+  "privacySection3Title": "3. 数据存储与安全",
+  "privacySection3Content": "所有数据（应用图标、打卡时间等）均存储在您设备的本地存储中。当您卸载本应用时，所有相关数据将随之删除。我们没有中央服务器来存储您的数据。",
+  "privacySection4Title": "4. 第三方服务",
+  "privacySection4Content": "本应用可能包含指向 Google Play 商店的链接。这些第三方网站有其独立的隐私政策，请在使用时予以注意。",
+  "privacySection5Title": "5. 政策更新",
+  "privacySection5Content": "我们可能会不时更新隐私政策。建议您定期查看此页面。",
+  "privacySection6Title": "6. 联系我们",
+  "privacySection6Content": "如果您对本隐私政策有任何疑问，请通过以下方式联系我们：\n邮箱：xinyoushanhai888@gmail.com",
+  "privacyFooter": "GPTesting 团队 敬上"
+}

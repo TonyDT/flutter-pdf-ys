@@ -1,7 +1,7 @@
 name: gptesting
 description: "Google Play 12+14 Day Testing Assistant"
 publish_to: 'none'
-version: 1.0.0+2
+version: 1.0.0+5
 
 environment:
   sdk: ^3.6.2
@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  flutter_native_splash: ^2.4.4
+
 
   cupertino_icons: ^1.0.8
 
@@ -16,25 +20,35 @@ dependencies:
   flutter_riverpod: ^2.6.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  path_provider: ^2.1.4
-  path: ^1.9.0
   package_info_plus: ^8.1.0
   url_launcher: ^6.3.1
-  share_plus: ^9.0.0
 
   # 应用管理
-  installed_apps: ^1.0.2
+  installed_apps: ^1.6.0
 
   # UI 增强
-  flutter_spinkit: ^5.2.1
-  intl: ^0.19.0
   http: ^1.6.0
   screenshot: ^3.0.0
   # 使用兼容 AGP 8.0 的版本替换 image_gallery_saver
-  saver_gallery: ^3.0.1
+  saver_gallery: ^3.0.6
   permission_handler: ^12.0.2
   device_info_plus: ^10.1.2
   qr_flutter: ^4.1.0
+
+flutter_native_splash:
+  # 基础配置，适用于所有平台
+  color: "#ffffff"               # 启动页背景色
+  image: assets/launch_image.png         # 启动页Logo图片路径
+
+  # Android 12+ 专属配置，必须要加
+  android_12:
+    color: "#ffffff"             # Android 12+ 启动页背景色
+    image: assets/launch_image.png.png       # Android 12+ 启动页Logo
+
+  # 可选配置
+  android: true                  # 生成Android启动页，默认true
+#  ios: true                      # 生成iOS启动页，默认true
+  fullscreen: true               # 是否全屏显示
 
 dev_dependencies:
   flutter_test:
@@ -42,6 +56,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
 
 flutter:
+  generate: true
   uses-material-design: true
 
   assets:

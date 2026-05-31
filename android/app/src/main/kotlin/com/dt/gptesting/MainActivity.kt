@@ -1,4 +1,4 @@
-package com.dt.gptesting
+package com.dt.GPTesting
 
 import io.flutter.embedding.android.FlutterActivity
 

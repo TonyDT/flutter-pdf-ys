@@ -4,6 +4,7 @@ import 'package:installed_apps/app_info.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import '../models/test_app.dart';
 
 final appProvider = StateNotifierProvider<AppNotifier, AppState>((ref) {
@@ -123,6 +124,13 @@ class AppNotifier extends StateNotifier<AppState> {
     final updatedList = state.testingApps.where((a) => a.packageName != packageName).toList();
     await _saveToHive(updatedList);
     state = state.copyWith(testingApps: updatedList);
+  }
+
+  Future<void> openStore(String packageName) async {
+    final url = Uri.parse('https://play.google.com/store/apps/details?id=$packageName');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _saveToHive(List<TestApp> apps) async {

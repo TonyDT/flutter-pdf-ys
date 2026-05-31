@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../core/l10n/app_localizations.dart';
+import '../core/constants/app_colors.dart';
 import 'tabs/apps_tab.dart';
 import 'tabs/test_tab.dart';
 import 'tabs/settings_tab.dart';
@@ -23,37 +25,44 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       body: Row(
         children: [
           NavigationRail(
+            backgroundColor: AppColors.surface,
+            indicatorColor: AppColors.primary.withOpacity(0.1),
             selectedIndex: _selectedIndex,
             onDestinationSelected: (int index) {
-              setState(() {
-                _selectedIndex = index;
-              });
+              setState(() => _selectedIndex = index);
             },
             labelType: NavigationRailLabelType.all,
-            destinations: const [
+            unselectedIconTheme: const IconThemeData(color: AppColors.textTertiary),
+            selectedIconTheme: const IconThemeData(color: AppColors.primary),
+            unselectedLabelTextStyle: const TextStyle(color: AppColors.textTertiary, fontSize: 11, fontWeight: FontWeight.bold),
+            selectedLabelTextStyle: const TextStyle(color: AppColors.primary, fontSize: 11, fontWeight: FontWeight.bold),
+            destinations: [
               NavigationRailDestination(
-                icon: Icon(Icons.apps),
-                label: Text('应用'),
+                icon: const Icon(Icons.apps_rounded),
+                label: Text(l10n.translate('apps')),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.bug_report),
-                label: Text('测试'),
+                icon: const Icon(Icons.bug_report_rounded),
+                label: Text(l10n.translate('test')),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.settings),
-                label: Text('设置'),
+                icon: const Icon(Icons.settings_suggest_rounded),
+                label: Text(l10n.translate('settings')),
               ),
               NavigationRailDestination(
-                icon: Icon(Icons.share),
-                label: Text('报告'),
+                icon: const Icon(Icons.analytics_rounded),
+                label: Text(l10n.translate('report')),
               ),
             ],
           ),
-          const VerticalDivider(thickness: 1, width: 1),
+          const VerticalDivider(thickness: 1, width: 1, color: Color(0xFFF1F5F9)),
           Expanded(
             child: _tabs[_selectedIndex],
           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import '../constants/app_colors.dart';
 
 class DayProgressBar extends StatelessWidget {
   final int days;
@@ -14,22 +15,12 @@ class DayProgressBar extends StatelessWidget {
   });
 
   Color _getFillColor() {
-    if (days <= 14) return Colors.blue;
-    
-    // 赤橙红绿青蓝紫 (Red, Orange, Amber, Green, Cyan, Blue, Purple)
-    const rainbow = [
-      Colors.red,
-      Colors.orange,
-      Colors.amber,
-      Colors.green,
-      Colors.cyan,
-      Colors.blue,
-      Colors.purple,
-    ];
+    if (days <= 14) return AppColors.primary;
     
     int excess = days - 14;
-    if (excess > rainbow.length) return Colors.purple;
-    return rainbow[excess - 1];
+    // 赤橙红绿青蓝紫
+    if (excess > AppColors.rainbow.length) return AppColors.rainbow.last;
+    return AppColors.rainbow[excess - 1];
   }
 
   @override
@@ -39,7 +30,6 @@ class DayProgressBar extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 计算每个小方块的宽度
         final totalSpacing = spacing * 13;
         final blockWidth = (constraints.maxWidth - totalSpacing) / 14;
 
@@ -51,8 +41,8 @@ class DayProgressBar extends StatelessWidget {
               width: blockWidth,
               height: blockHeight,
               decoration: BoxDecoration(
-                color: isFilled ? fillColor : Colors.grey[200],
-                borderRadius: BorderRadius.circular(2),
+                color: isFilled ? fillColor : Colors.grey[100],
+                borderRadius: BorderRadius.circular(4), // Slightly more rounded
               ),
             );
           }),

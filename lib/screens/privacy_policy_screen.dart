@@ -1,86 +1,70 @@
 import 'package:flutter/material.dart';
+import '../core/l10n/app_localizations.dart';
+import '../core/constants/app_colors.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final isZh = l10n.locale.languageCode == 'zh';
+
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('隐私政策', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        title: Text(l10n.translate('privacy_policy'), style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'GPTesting 隐私政策',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
             Text(
-              '生效日期：${DateTime.now().year}年${DateTime.now().month}月${DateTime.now().day}日',
-              style: const TextStyle(color: Colors.grey),
+              isZh ? 'GPTesting 隐私政策' : 'GPTesting Privacy Policy',
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
             ),
-            const SizedBox(height: 20),
-            _buildSectionTitle('1. 我们收集的信息'),
-            _buildSectionContent(
-              'GPTesting 是一款纯本地运行的工具软件。我们不会收集您的任何个人身份信息。'
-              '\n• 应用列表：为了帮助您进行 Google Play 测试，我们需要获取您设备上安装的应用列表。此数据仅用于在应用内展示并协助您打卡，绝不会上传至任何服务器。'
-              '\n• 打卡记录：您的测试打卡时间记录存储在您手机本地的数据库中。',
+            const SizedBox(height: 12),
+            Text(
+              isZh ? '生效日期：2024年1月1日' : 'Effective Date: Jan 1, 2024',
+              style: const TextStyle(color: AppColors.textTertiary, fontWeight: FontWeight.bold),
             ),
-            _buildSectionTitle('2. 权限使用说明'),
-            _buildSectionContent(
-              '为了实现核心功能，我们需要以下权限：'
-              '\n• QUERY_ALL_PACKAGES（查询所有包）：用于扫描您手机上安装的测试应用。'
-              '\n• 存储/照片权限：用于将生成的测试报告图片保存到您的手机相册中。'
-              '\n• 联网权限：仅用于检查应用是否在 Google Play 商店上线，不会上传您的个人数据。',
+            const SizedBox(height: 32),
+            _buildSection(
+              isZh ? '1. 我们收集的信息' : '1. Information We Collect',
+              isZh 
+                ? 'GPTesting 是一款纯本地运行的工具软件。我们不会收集您的任何个人身份信息。数据仅存储在您的本地设备上。' 
+                : 'GPTesting is a local-only tool. We do not collect any personally identifiable information (PII). Your data stays on your device.',
             ),
-            _buildSectionTitle('3. 数据存储与安全'),
-            _buildSectionContent(
-              '所有数据（应用图标、打卡时间等）均存储在您设备的本地存储中。当您卸载本应用时，所有相关数据将随之删除。我们没有中央服务器来存储您的数据。',
+            _buildSection(
+              isZh ? '2. 权限使用说明' : '2. Permissions',
+              isZh 
+                ? '• QUERY_ALL_PACKAGES: 扫描已安装应用进行测试。\n• 存储权限: 保存报告到相册。\n• 联网权限: 仅用于检查商店状态。' 
+                : '• QUERY_ALL_PACKAGES: To scan installed apps for testing.\n• Storage: To save reports to your gallery.\n• Internet: To check Google Play Store status.',
             ),
-            _buildSectionTitle('4. 第三方服务'),
-            _buildSectionContent(
-              '本应用可能包含指向 Google Play 商店的链接。这些第三方网站有其独立的隐私政策，请在使用时予以注意。',
+            _buildSection(
+              isZh ? '3. 数据安全' : '3. Data Security',
+              isZh 
+                ? '所有数据在您卸载应用时会同步删除。我们没有中央服务器。' 
+                : 'All data is deleted when you uninstall the app. We have no central servers.',
             ),
-            _buildSectionTitle('5. 政策更新'),
-            _buildSectionContent(
-              '我们可能会不时更新隐私政策。建议您定期查看此页面。',
-            ),
-            _buildSectionTitle('6. 联系我们'),
-            _buildSectionContent(
-              '如果您对本隐私政策有任何疑问，请通过以下方式联系我们：\n邮箱：support@gptesting.com',
-            ),
-            const SizedBox(height: 40),
-            const Center(
-              child: Text(
-                'GPTesting 团队 敬上',
-                style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
-              ),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionTitle(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12.0),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blue),
-      ),
-    );
-  }
-
-  Widget _buildSectionContent(String content) {
-    return Text(
-      content,
-      style: const TextStyle(fontSize: 14, height: 1.6, color: Colors.black87),
+  Widget _buildSection(String title, String content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary)),
+        const SizedBox(height: 12),
+        Text(content, style: const TextStyle(fontSize: 15, height: 1.6, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+        const SizedBox(height: 32),
+      ],
     );
   }
 }
