@@ -41,11 +41,13 @@ class AppNotifier extends StateNotifier<AppState> {
   }
 
   static const String _boxName = 'gp_tester_box_v2';
+  static const String _cacheBoxName = 'installed_apps_cache_v2'; // 升级版本以匹配新字段
 
   Future<void> _init() async {
+    // 1. 加载测试中心数据
     final box = await Hive.openBox(_boxName);
     final data = box.get('apps', defaultValue: []) as List;
-    final apps = data.map((item) {
+    final List<TestApp> tApps = data.map((item) {
       final map = Map<String, dynamic>.from(item);
       if (map['icon'] != null && map['icon'] is! Uint8List) {
         map['icon'] = Uint8List.fromList(List<int>.from(map['icon']));
@@ -53,32 +55,79 @@ class AppNotifier extends StateNotifier<AppState> {
       return TestApp.fromMap(map);
     }).toList();
     
-    // 2. 测试中心排序：最后添加的在最顶上
-    _sortAndSetTestingApps(apps);
+    tApps.sort((a, b) => b.addedDate.compareTo(a.addedDate));
+    state = state.copyWith(testingApps: tApps);
+
+    // 2. 加载本地缓存的应用列表
+    final cacheBox = await Hive.openBox(_cacheBoxName);
+    final cachedData = cacheBox.get('cached_list', defaultValue: null);
+
+    if (cachedData != null) {
+      final List<dynamic> list = cachedData;
+      List<AppInfo> cachedApps = list.map((item) {
+        final m = Map<String, dynamic>.from(item);
+        return AppInfo(
+          name: m['name'] ?? '',
+          packageName: m['packageName'] ?? '',
+          versionName: m['versionName'] ?? '',
+          versionCode: m['versionCode'] ?? 0,
+          icon: m['icon'] != null ? Uint8List.fromList(List<int>.from(m['icon'])) : null,
+          builtWith: BuiltWith.values[m['builtWith'] ?? 0],
+          installedTimestamp: m['installedTimestamp'] ?? DateTime.now().millisecondsSinceEpoch,
+        );
+      }).toList().cast<AppInfo>();
+
+      _applySortingAndSetState(cachedApps);
+    } else {
+      scanApps();
+    }
   }
 
-  void _sortAndSetTestingApps(List<TestApp> apps) {
-    apps.sort((a, b) => b.addedDate.compareTo(a.addedDate));
-    state = state.copyWith(testingApps: apps);
+  /// 核心排序逻辑
+  void _applySortingAndSetState(List<AppInfo> apps) {
+    List<AppInfo> testing = [];
+    List<AppInfo> others = List.from(apps);
+
+    // 提取所有已测应用
+    for (var tApp in state.testingApps) {
+      final index = others.indexWhere((a) => a.packageName == tApp.packageName);
+      if (index != -1) {
+        testing.add(others[index]);
+        others.removeAt(index);
+      }
+    }
+
+    state = state.copyWith(installedApps: [...testing, ...others]);
   }
 
+  /// 扫描系统应用并缓存到本地
   Future<void> scanApps() async {
     state = state.copyWith(isLoading: true);
     try {
-      // 快速扫描本地所有应用
-      List<AppInfo> apps = await InstalledApps.getInstalledApps(true, true);
+      List<AppInfo> freshApps = await InstalledApps.getInstalledApps(true, true);
+      // 默认按安装时间倒序
+      freshApps.sort((a, b) => b.installedTimestamp.compareTo(a.installedTimestamp));
+
+      final cacheBox = Hive.box(_cacheBoxName);
+      final List<Map<String, dynamic>> dataToSave = freshApps.map((a) => {
+        'name': a.name,
+        'packageName': a.packageName,
+        'versionName': a.versionName,
+        'versionCode': a.versionCode,
+        'icon': a.icon,
+        'builtWith': a.builtWith.index,
+        'installedTimestamp': a.installedTimestamp,
+      }).toList();
       
-      // 1. 应用库排序：虽然插件不直接提供安装时间，但通常系统返回的顺序可以优化
-      // 我们将其按名称排序作为基础，或者如果有安装时间字段再优化
-      apps.sort((a, b) => a.name.compareTo(b.name));
-      
-      state = state.copyWith(installedApps: apps, isLoading: false);
+      await cacheBox.put('cached_list', dataToSave);
+
+      _applySortingAndSetState(freshApps);
+      state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false);
     }
   }
 
-  // 检查应用是否上线（仅在点击打卡时触发）
   Future<bool> checkIfAppIsOnline(String packageName) async {
     try {
       final response = await http.head(
@@ -101,9 +150,10 @@ class AppNotifier extends StateNotifier<AppState> {
       icon: app.icon,
     );
 
-    final updatedList = [newApp, ...state.testingApps]; // 直接插入到最前面
-    await _saveToHive(updatedList);
-    state = state.copyWith(testingApps: updatedList);
+    final updatedTApps = [newApp, ...state.testingApps];
+    await _saveToHive(updatedTApps);
+    state = state.copyWith(testingApps: updatedTApps);
+    _applySortingAndSetState(state.installedApps);
   }
 
   Future<void> checkIn(TestApp app) async {
@@ -124,6 +174,7 @@ class AppNotifier extends StateNotifier<AppState> {
     final updatedList = state.testingApps.where((a) => a.packageName != packageName).toList();
     await _saveToHive(updatedList);
     state = state.copyWith(testingApps: updatedList);
+    _applySortingAndSetState(state.installedApps);
   }
 
   Future<void> openStore(String packageName) async {
