@@ -154,6 +154,45 @@ class PdfEditService {
     }
   }
 
+  /// Replace text in PDF
+  static Future<File?> replaceText(File pdfFile, String oldText, String newText) async {
+    try {
+      final bytes = await pdfFile.readAsBytes();
+      final doc = PdfDocument(inputBytes: bytes);
+      
+      // 使用 PdfTextExtractor 查找文本
+      final extractor = PdfTextExtractor(doc);
+      
+      for (int i = 0; i < doc.pages.count; i++) {
+        final List<MatchedItem> matchedItems = extractor.findText([oldText], startPageIndex: i, endPageIndex: i);
+        if (matchedItems.isNotEmpty) {
+          final page = doc.pages[i];
+          for (final matchedItem in matchedItems) {
+            // 覆盖旧文本
+            page.graphics.drawRectangle(
+              brush: PdfSolidBrush(PdfColor(255, 255, 255)),
+              bounds: matchedItem.bounds,
+            );
+            // 绘制新文本
+            page.graphics.drawString(
+              newText,
+              PdfStandardFont(PdfFontFamily.helvetica, matchedItem.bounds.height),
+              brush: PdfSolidBrush(PdfColor(0, 0, 0)),
+              bounds: matchedItem.bounds,
+            );
+          }
+        }
+      }
+      
+      final newBytes = doc.saveSync();
+      doc.dispose();
+      return await _savePdf(newBytes, 'edited_text_${_timestamp()}.pdf');
+    } catch (e) {
+      debugPrint('Replace text failed: $e');
+      return null;
+    }
+  }
+
   /// Decrypt PDF (remove password protection)
   static Future<File?> decryptPdf(File pdfFile, String password) async {
     try {

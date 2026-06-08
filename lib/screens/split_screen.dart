@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
@@ -36,7 +37,6 @@ class _SplitScreenState extends State<SplitScreen> {
   Future<void> _split() async {
     if (_selectedFile == null || _rangeController.text.isEmpty) return;
     
-    // 保存 context 引用，避免 async gap 问题
     final scaffoldMessenger = ScaffoldMessenger.of(context);
     
     setState(() => _isProcessing = true);
@@ -44,33 +44,18 @@ class _SplitScreenState extends State<SplitScreen> {
     setState(() => _isProcessing = false);
     
     if (results.isNotEmpty && mounted) {
-      // 获取输出目录
-      final appDir = await getApplicationDocumentsDirectory();
-      final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
-      
       scaffoldMessenger.showSnackBar(
         SnackBar(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('PDF拆分成功！共 ${results.length} 个文件', style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text('保存至: ${outputDir.path}', style: const TextStyle(fontSize: 12)),
-            ],
-          ),
+          content: Text('PDF拆分成功！共生成 ${results.length} 个文件'),
           backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: '确定',
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
+          duration: const Duration(seconds: 3),
         ),
       );
+      // 分享第一个文件作为示例，或者可以引导用户到文件列表
+      Share.shareXFiles([XFile(results.first.path)], text: 'PDF Pro - 拆分结果');
     } else if (mounted) {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Split failed'), backgroundColor: AppColors.error),
+        const SnackBar(content: Text('拆分失败，请检查页码范围'), backgroundColor: AppColors.error),
       );
     }
   }
@@ -84,7 +69,7 @@ class _SplitScreenState extends State<SplitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Split PDF', style: AppFonts.h3)),
+      appBar: AppBar(title: const Text('拆分PDF', style: AppFonts.h3)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -96,7 +81,7 @@ class _SplitScreenState extends State<SplitScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.folder_open),
-                label: Text(_selectedFile == null ? 'Select PDF' : _selectedFile!.path.split('/').last),
+                label: Text(_selectedFile == null ? '选择PDF文件' : _selectedFile!.path.split('/').last),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -108,9 +93,9 @@ class _SplitScreenState extends State<SplitScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Total Pages: $_totalPages', style: AppFonts.h4),
+                    Text('总页数: $_totalPages', style: AppFonts.h4),
                     const SizedBox(height: 12),
-                    Text('Page Ranges (e.g. 1-3, 5, 7-9)', style: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                    Text('页码范围 (例如: 1-3, 5, 7-9)', style: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _rangeController,
@@ -122,13 +107,13 @@ class _SplitScreenState extends State<SplitScreen> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: _isProcessing ? null : _split,
                   style: AppStyles.primaryButton,
                   child: _isProcessing
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('Split'),
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                      : const Text('执行拆分'),
                 ),
               ),
             ],

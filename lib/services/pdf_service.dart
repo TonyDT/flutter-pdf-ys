@@ -9,7 +9,7 @@ class PdfService {
 
   /// 选择PDF文件
   static Future<File?> pickPdfFile() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
@@ -22,7 +22,7 @@ class PdfService {
 
   /// 选择多个PDF文件
   static Future<List<File>?> pickMultiplePdfFiles() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
       allowMultiple: true,
@@ -36,7 +36,7 @@ class PdfService {
 
   /// 选择多个图片文件
   static Future<List<File>?> pickImageFiles() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'jpeg', 'png'],
       allowMultiple: true,

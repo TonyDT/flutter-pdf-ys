@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
@@ -39,7 +40,7 @@ class _MergeScreenState extends State<MergeScreen> {
   Future<void> _merge() async {
     if (_selectedFiles.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select at least 2 PDF files'), backgroundColor: AppColors.warning),
+        const SnackBar(content: Text('请至少选择2个PDF文件'), backgroundColor: AppColors.warning),
       );
       return;
     }
@@ -55,22 +56,18 @@ class _MergeScreenState extends State<MergeScreen> {
             children: [
               const Text('PDF合并成功！', style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('保存至: ${result.path}', style: const TextStyle(fontSize: 12)),
+              Text('已保存至应用目录', style: const TextStyle(fontSize: 12)),
             ],
           ),
           backgroundColor: AppColors.success,
-          duration: const Duration(seconds: 5),
-          action: SnackBarAction(
-            label: '确定',
-            textColor: Colors.white,
-            onPressed: () {},
-          ),
+          duration: const Duration(seconds: 3),
         ),
       );
+      Share.shareXFiles([XFile(result.path)], text: 'PDF Pro - 合并结果');
       setState(() => _selectedFiles.clear());
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Merge failed'), backgroundColor: AppColors.error),
+        const SnackBar(content: Text('合并失败'), backgroundColor: AppColors.error),
       );
     }
   }
@@ -78,7 +75,7 @@ class _MergeScreenState extends State<MergeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Merge PDFs', style: AppFonts.h3)),
+      appBar: AppBar(title: const Text('合并PDF', style: AppFonts.h3)),
       body: Column(
         children: [
           Padding(
@@ -89,7 +86,7 @@ class _MergeScreenState extends State<MergeScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFiles,
                 icon: const Icon(Icons.add),
-                label: const Text('Add PDF Files'),
+                label: const Text('添加PDF文件'),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -102,7 +99,7 @@ class _MergeScreenState extends State<MergeScreen> {
                       children: [
                         Icon(Icons.merge_type, size: 64, color: AppColors.textHint.withValues(alpha: 0.4)),
                         const SizedBox(height: 12),
-                        Text('Add PDF files to merge', style: AppFonts.bodyMedium.copyWith(color: AppColors.textHint)),
+                        Text('添加要合并的文件', style: AppFonts.bodyMedium.copyWith(color: AppColors.textHint)),
                       ],
                     ),
                   )
@@ -136,13 +133,13 @@ class _MergeScreenState extends State<MergeScreen> {
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: double.infinity,
-                  height: 48,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: _isProcessing ? null : _merge,
                     style: AppStyles.primaryButton,
                     child: _isProcessing
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : Text('Merge ${_selectedFiles.length} Files'),
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                        : Text('合并 ${_selectedFiles.length} 个文件'),
                   ),
                 ),
               ),

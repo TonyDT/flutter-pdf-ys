@@ -1,42 +1,48 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:syncfusion_flutter_pdf/pdf.dart' as syncfusion;
 import 'package:image/image.dart' as img;
-import 'package:pdf_render/pdf_render.dart' as pdf_render;
+import 'package:pdfx/pdfx.dart' as pdfx;
 
 class ConvertService {
   ConvertService._();
 
-  /// PDF page to image (PNG) - 使用 pdf_render 包
+  /// PDF page to image (PNG) - 使用 pdfx 适配
   static Future<File?> pdfPageToImage(File pdfFile, int pageNumber) async {
-    pdf_render.PdfDocument? pdfDocument;
+    pdfx.PdfDocument? pdfDocument;
     
     try {
-      // 使用 pdf_render 打开 PDF 文件
-      pdfDocument = await pdf_render.PdfDocument.openFile(pdfFile.path);
+      // 使用 pdfx 打开 PDF 文件
+      pdfDocument = await pdfx.PdfDocument.openFile(pdfFile.path);
       
-      if (pageNumber < 1 || pageNumber > pdfDocument.pageCount) {
-        await pdfDocument.dispose();
+      if (pageNumber < 1 || pageNumber > pdfDocument.pagesCount) {
+        await pdfDocument.close();
         return null;
       }
       
-      // 获取指定页面
+      // 获取指定页面 (pdfx 的 getPage 索引从 1 开始)
       final page = await pdfDocument.getPage(pageNumber);
       
-      // 渲染页面为图片 (使用 2x 缩放以获得更清晰的图片)
+      // 渲染页面为图片
       final pageImage = await page.render(
-        width: (page.width * 2).toInt(),
-        height: (page.height * 2).toInt(),
+        width: page.width * 2,
+        height: page.height * 2,
+        format: pdfx.PdfPageImageFormat.png,
       );
       
-      // 将 PdfPageImage 转换为 PNG 字节
-      final pngBytes = await _convertPageImageToPng(pageImage);
+      if (pageImage == null) {
+        await page.close();
+        await pdfDocument.close();
+        return null;
+      }
       
-      await pdfDocument.dispose();
+      final pngBytes = pageImage.bytes;
+      
+      await page.close();
+      await pdfDocument.close();
 
       final appDir = await getApplicationDocumentsDirectory();
       final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
@@ -48,80 +54,51 @@ class ConvertService {
       return file;
     } catch (e) {
       debugPrint('PDF to image failed: $e');
-      // 清理资源
       try {
-        await pdfDocument?.dispose();
+        await pdfDocument?.close();
       } catch (_) {}
       return null;
     }
   }
 
-  /// All PDF pages to images - 使用 pdf_render 包
+  /// All PDF pages to images
   static Future<List<File>> pdfToImages(File pdfFile) async {
-    pdf_render.PdfDocument? pdfDocument;
+    pdfx.PdfDocument? pdfDocument;
     
     try {
-      // 使用 pdf_render 打开 PDF 文件
-      pdfDocument = await pdf_render.PdfDocument.openFile(pdfFile.path);
+      pdfDocument = await pdfx.PdfDocument.openFile(pdfFile.path);
       final files = <File>[];
 
-      for (int i = 1; i <= pdfDocument.pageCount; i++) {
-        // 获取页面
+      for (int i = 1; i <= pdfDocument.pagesCount; i++) {
         final page = await pdfDocument.getPage(i);
-        
-        // 渲染页面为图片 (使用 2x 缩放以获得更清晰的图片)
         final pageImage = await page.render(
-          width: (page.width * 2).toInt(),
-          height: (page.height * 2).toInt(),
+          width: page.width * 2,
+          height: page.height * 2,
+          format: pdfx.PdfPageImageFormat.png,
         );
         
-        // 将 PdfPageImage 转换为 PNG 字节
-        final pngBytes = await _convertPageImageToPng(pageImage);
-
-        final appDir = await getApplicationDocumentsDirectory();
-        final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
-        if (!await outputDir.exists()) {
-          await outputDir.create(recursive: true);
+        if (pageImage != null) {
+          final appDir = await getApplicationDocumentsDirectory();
+          final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
+          if (!await outputDir.exists()) {
+            await outputDir.create(recursive: true);
+          }
+          final file = File(p.join(outputDir.path, 'page_${i}_${_timestamp()}.png'));
+          await file.writeAsBytes(pageImage.bytes);
+          files.add(file);
         }
-        final file = File(p.join(outputDir.path, 'page_${i}_${_timestamp()}.png'));
-        await file.writeAsBytes(pngBytes);
-        files.add(file);
+        await page.close();
       }
       
-      await pdfDocument.dispose();
+      await pdfDocument.close();
       return files;
     } catch (e) {
       debugPrint('PDF to images failed: $e');
-      // 清理资源
       try {
-        await pdfDocument?.dispose();
+        await pdfDocument?.close();
       } catch (_) {}
       return [];
     }
-  }
-
-  /// 将 PdfPageImage 转换为 PNG 字节
-  static Future<Uint8List> _convertPageImageToPng(pdf_render.PdfPageImage pageImage) async {
-    // 获取像素数据 (Uint8List 格式，每4个字节表示一个像素的 RGBA)
-    final Uint8List pixels = pageImage.pixels;
-    final int width = pageImage.width;
-    final int height = pageImage.height;
-    
-    // 使用 dart:ui 创建 Image 并编码为 PNG
-    final ui.ImmutableBuffer buffer = await ui.ImmutableBuffer.fromUint8List(pixels);
-    final ui.ImageDescriptor descriptor = ui.ImageDescriptor.raw(
-      buffer,
-      width: width,
-      height: height,
-      pixelFormat: ui.PixelFormat.rgba8888,
-    );
-    
-    final ui.Codec codec = await descriptor.instantiateCodec();
-    final ui.FrameInfo frame = await codec.getNextFrame();
-    final ui.Image image = frame.image;
-    
-    final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-    return byteData!.buffer.asUint8List();
   }
 
   /// Images to PDF
@@ -130,10 +107,7 @@ class ConvertService {
       final doc = syncfusion.PdfDocument();
       for (int i = 0; i < imageFiles.length; i++) {
         final imageBytes = await imageFiles[i].readAsBytes();
-        // 第一页需要手动添加，后续页面通过 add() 添加
-        if (i == 0) {
-          doc.pages.add();
-        }
+        doc.pages.add();
         final page = doc.pages[i];
         final pdfImage = syncfusion.PdfBitmap(imageBytes);
         final size = page.getClientSize();
@@ -174,7 +148,6 @@ class ConvertService {
     try {
       if (imageFiles.isEmpty) return null;
 
-      // Decode all images
       final images = <img.Image>[];
       for (final file in imageFiles) {
         final bytes = await file.readAsBytes();
@@ -186,7 +159,6 @@ class ConvertService {
 
       if (images.isEmpty) return null;
 
-      // Calculate total height and max width
       int totalHeight = 0;
       int maxWidth = 0;
       for (final image in images) {
@@ -196,20 +168,16 @@ class ConvertService {
         }
       }
 
-      // Create a new image with the calculated dimensions
       final longImage = img.Image(width: maxWidth, height: totalHeight);
       img.fill(longImage, color: img.ColorRgb8(255, 255, 255));
 
-      // Draw each image onto the long image
       int currentY = 0;
       for (final image in images) {
-        // Center the image horizontally if widths don't match
         final xOffset = (maxWidth - image.width) ~/ 2;
         img.compositeImage(longImage, image, dstX: xOffset, dstY: currentY);
         currentY += image.height;
       }
 
-      // Save the long image
       final appDir = await getApplicationDocumentsDirectory();
       final outputDir = Directory(p.join(appDir.path, 'pdf_output'));
       if (!await outputDir.exists()) {

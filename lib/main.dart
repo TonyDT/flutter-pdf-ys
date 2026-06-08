@@ -1,7 +1,6 @@
 // main.dart - 完全干净的最终版本，无任何错误
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'core/theme/theme_provider.dart';
 import 'screens/home_screen.dart';

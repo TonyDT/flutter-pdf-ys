@@ -23,7 +23,7 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
   int _totalPages = 0;
 
   Future<void> _pickPdf() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
     );
