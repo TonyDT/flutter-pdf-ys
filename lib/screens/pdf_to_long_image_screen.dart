@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../services/pdf_service.dart';
 import '../services/convert_service.dart';
 import 'package:share_plus/share_plus.dart';
@@ -26,6 +27,7 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
 
   Future<void> _convert() async {
     if (_selectedFile == null) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _isProcessing = true);
     try {
       final images = await ConvertService.pdfToImages(_selectedFile!);
@@ -36,7 +38,9 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
           setState(() => _outputFile = outputFile);
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('长图生成成功！'), backgroundColor: AppColors.success),
+              SnackBar(
+                  content: Text(l10n.t('long_image_success')),
+                  backgroundColor: AppColors.success),
             );
           }
         }
@@ -48,14 +52,19 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
 
   void _shareFile() {
     if (_outputFile != null) {
-      Share.shareXFiles([XFile(_outputFile!.path)], text: 'PDF Pro - 长图');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(_outputFile!.path)],
+        text: 'PDF Pro',
+      ));
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('PDF转长图', style: AppFonts.h3)),
+      appBar:
+          AppBar(title: Text(l10n.t('pdf_to_long_image'), style: AppFonts.h3)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -67,7 +76,9 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.picture_as_pdf),
-                label: Text(_selectedFile == null ? '选择PDF文件' : _selectedFile!.path.split('/').last),
+                label: Text(_selectedFile == null
+                    ? l10n.t('choose_pdf_file')
+                    : _selectedFile!.path.split('/').last),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -79,9 +90,11 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('说明', style: AppFonts.h4),
+                    Text(l10n.t('instructions'), style: AppFonts.h4),
                     const SizedBox(height: 8),
-                    Text('将PDF所有页面纵向拼接为一张长图', style: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                    Text(l10n.t('long_image_desc'),
+                        style: AppFonts.bodyMedium
+                            .copyWith(color: AppColors.textSecondary)),
                   ],
                 ),
               ),
@@ -93,20 +106,30 @@ class _PdfToLongImageScreenState extends State<PdfToLongImageScreen> {
                   onPressed: _isProcessing ? null : _convert,
                   style: AppStyles.primaryButton,
                   child: _isProcessing
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('生成长图', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : Text(l10n.t('generate_long_image'),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],
             if (_outputFile != null) ...[
               const SizedBox(height: 24),
-              Text('输出文件', style: AppFonts.h4),
+              Text(l10n.t('output_file'), style: AppFonts.h4),
               const SizedBox(height: 8),
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.image, color: AppColors.primary),
-                  title: Text(_outputFile!.path.split('/').last, style: AppFonts.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                  trailing: IconButton(icon: const Icon(Icons.share), onPressed: _shareFile),
+                  title: Text(_outputFile!.path.split('/').last,
+                      style: AppFonts.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  trailing: IconButton(
+                      icon: const Icon(Icons.share), onPressed: _shareFile),
                 ),
               ),
             ],

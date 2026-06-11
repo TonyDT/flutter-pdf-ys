@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../services/pdf_service.dart';
 import '../services/pdf_edit_service.dart';
 
@@ -33,9 +34,12 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
   }
 
   Future<void> _processEdit() async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedFile == null || _oldTextController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入要查找的文本'), backgroundColor: AppColors.warning),
+        SnackBar(
+            content: Text(l10n.t('enter_find_text')),
+            backgroundColor: AppColors.warning),
       );
       return;
     }
@@ -50,12 +54,19 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
 
     if (result != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('文本替换成功！'), backgroundColor: AppColors.success),
+        SnackBar(
+            content: Text(l10n.t('text_replace_success')),
+            backgroundColor: AppColors.success),
       );
-      Share.shareXFiles([XFile(result.path)], text: 'PDF Pro - 编辑文本');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(result.path)],
+        text: 'PDF Pro',
+      ));
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('文本替换失败，可能未找到匹配项'), backgroundColor: AppColors.error),
+        SnackBar(
+            content: Text(l10n.t('text_replace_failed')),
+            backgroundColor: AppColors.error),
       );
     }
   }
@@ -69,8 +80,9 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('编辑PDF文本', style: AppFonts.h3)),
+      appBar: AppBar(title: Text(l10n.t('edit_pdf_text'), style: AppFonts.h3)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -82,7 +94,9 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.folder_open),
-                label: Text(_selectedFile == null ? '选择PDF文件' : _selectedFile!.path.split('/').last),
+                label: Text(_selectedFile == null
+                    ? l10n.t('choose_pdf_file')
+                    : _selectedFile!.path.split('/').last),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -94,14 +108,17 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('总页数: $_totalPages', style: AppFonts.h4),
+                    Text('${l10n.t('total_pages')}: $_totalPages',
+                        style: AppFonts.h4),
                     const SizedBox(height: 16),
-                    Text('查找并替换', style: AppFonts.bodyMedium.copyWith(color: AppColors.textSecondary)),
+                    Text(l10n.t('find_replace'),
+                        style: AppFonts.bodyMedium
+                            .copyWith(color: AppColors.textSecondary)),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _oldTextController,
                       decoration: AppStyles.inputDecoration(
-                        hintText: '查找文本',
+                        hintText: l10n.t('find_text'),
                         prefixIcon: Icons.search,
                       ),
                     ),
@@ -109,7 +126,7 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
                     TextField(
                       controller: _newTextController,
                       decoration: AppStyles.inputDecoration(
-                        hintText: '替换为',
+                        hintText: l10n.t('replace_with'),
                         prefixIcon: Icons.repeat,
                       ),
                     ),
@@ -124,13 +141,17 @@ class _EditPdfTextScreenState extends State<EditPdfTextScreen> {
                   onPressed: _isProcessing ? null : _processEdit,
                   style: AppStyles.primaryButton,
                   child: _isProcessing
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('执行替换'),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : Text(l10n.t('run_replace')),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                '注意：此功能会查找文档中所有匹配的文本并用新文本覆盖。仅适用于可编辑文本的PDF。',
+                l10n.t('edit_text_note'),
                 style: AppFonts.bodySmall.copyWith(color: AppColors.textHint),
               ),
             ],

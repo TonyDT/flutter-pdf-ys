@@ -1,7 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as p;
 import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
@@ -52,7 +50,10 @@ class _SplitScreenState extends State<SplitScreen> {
         ),
       );
       // 分享第一个文件作为示例，或者可以引导用户到文件列表
-      Share.shareXFiles([XFile(results.first.path)], text: 'PDF Pro - 拆分结果');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(results.first.path)],
+        text: 'PDF Pro - 拆分结果',
+      ));
     } else if (mounted) {
       scaffoldMessenger.showSnackBar(
         const SnackBar(content: Text('拆分失败，请检查页码范围'), backgroundColor: AppColors.error),

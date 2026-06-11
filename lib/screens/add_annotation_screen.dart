@@ -103,7 +103,10 @@ class _AddAnnotationScreenState extends State<AddAnnotationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('注释添加成功！'), backgroundColor: AppColors.success),
         );
-        Share.shareXFiles([XFile(file.path)], text: 'PDF Pro - 添加注释');
+        SharePlus.instance.share(ShareParams(
+          files: [XFile(file.path)],
+          text: 'PDF Pro - 添加注释',
+        ));
       }
     } catch (e) {
       if (mounted) {

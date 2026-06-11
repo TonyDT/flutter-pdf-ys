@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../services/pdf_service.dart';
 import '../services/pdf_edit_service.dart';
 
@@ -11,7 +12,7 @@ enum EncryptMode { encrypt, decrypt }
 
 class EncryptScreen extends StatefulWidget {
   final EncryptMode mode;
-  
+
   const EncryptScreen({super.key, this.mode = EncryptMode.encrypt});
 
   @override
@@ -32,49 +33,59 @@ class _EncryptScreenState extends State<EncryptScreen> {
 
   Future<void> _processPdf() async {
     if (_selectedFile == null) return;
+    final l10n = AppLocalizations.of(context);
     if (_passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请输入密码'), backgroundColor: AppColors.warning),
+        SnackBar(
+            content: Text(l10n.t('enter_password')),
+            backgroundColor: AppColors.warning),
       );
       return;
     }
-    
+
     if (widget.mode == EncryptMode.encrypt) {
       if (_passwordController.text != _confirmController.text) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('两次输入的密码不一致'), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text(l10n.t('password_mismatch')),
+              backgroundColor: AppColors.error),
         );
         return;
       }
     }
-    
+
     setState(() => _isProcessing = true);
-    
+
     File? result;
     if (widget.mode == EncryptMode.encrypt) {
-      result = await PdfEditService.encryptPdf(_selectedFile!, _passwordController.text);
+      result = await PdfEditService.encryptPdf(
+          _selectedFile!, _passwordController.text);
     } else {
-      result = await PdfEditService.decryptPdf(_selectedFile!, _passwordController.text);
+      result = await PdfEditService.decryptPdf(
+          _selectedFile!, _passwordController.text);
     }
-    
+
     setState(() => _isProcessing = false);
-    
+
     if (result != null && mounted) {
-      final message = widget.mode == EncryptMode.encrypt 
-          ? 'PDF加密成功！' 
-          : 'PDF解密成功！';
+      final message = widget.mode == EncryptMode.encrypt
+          ? l10n.t('pdf_encrypt_success')
+          : l10n.t('pdf_decrypt_success');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message), backgroundColor: AppColors.success),
       );
-      Share.shareXFiles([XFile(result.path)], text: 'PDF Pro - 处理结果');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(result.path)],
+        text: 'PDF Pro',
+      ));
       _passwordController.clear();
       if (widget.mode == EncryptMode.encrypt) {
         _confirmController.clear();
       }
     } else if (mounted) {
-      final message = widget.mode == EncryptMode.encrypt 
-          ? '加密失败' 
-          : '解密失败，请检查密码是否正确';
+      final message = widget.mode == EncryptMode.encrypt
+          ? l10n.t('encrypt_failed')
+          : l10n.t('decrypt_failed');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message), backgroundColor: AppColors.error),
       );
@@ -90,11 +101,14 @@ class _EncryptScreenState extends State<EncryptScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isEncryptMode = widget.mode == EncryptMode.encrypt;
-    final title = isEncryptMode ? '锁定PDF' : '解锁PDF';
-    final buttonText = isEncryptMode ? '立即加密' : '立即解密';
-    final passwordHint = isEncryptMode ? '设置密码' : '输入现有密码';
-    
+    final title = isEncryptMode ? l10n.t('lock_pdf') : l10n.t('unlock_pdf');
+    final buttonText =
+        isEncryptMode ? l10n.t('encrypt_now') : l10n.t('decrypt_now');
+    final passwordHint =
+        isEncryptMode ? l10n.t('set_password') : l10n.t('existing_password');
+
     return Scaffold(
       appBar: AppBar(title: Text(title, style: AppFonts.h3)),
       body: SingleChildScrollView(
@@ -108,7 +122,9 @@ class _EncryptScreenState extends State<EncryptScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFile,
                 icon: const Icon(Icons.folder_open),
-                label: Text(_selectedFile == null ? '选择PDF文件' : _selectedFile!.path.split('/').last),
+                label: Text(_selectedFile == null
+                    ? l10n.t('choose_pdf_file')
+                    : _selectedFile!.path.split('/').last),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -127,8 +143,11 @@ class _EncryptScreenState extends State<EncryptScreen> {
                         prefixIcon: Icons.lock,
                       ).copyWith(
                         suffixIcon: IconButton(
-                          icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
-                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          icon: Icon(_obscurePassword
+                              ? Icons.visibility
+                              : Icons.visibility_off),
+                          onPressed: () => setState(
+                              () => _obscurePassword = !_obscurePassword),
                         ),
                       ),
                     ),
@@ -138,7 +157,7 @@ class _EncryptScreenState extends State<EncryptScreen> {
                         controller: _confirmController,
                         obscureText: _obscurePassword,
                         decoration: AppStyles.inputDecoration(
-                          hintText: '确认密码',
+                          hintText: l10n.t('confirm_password'),
                           prefixIcon: Icons.lock_outline,
                         ),
                       ),
@@ -154,15 +173,17 @@ class _EncryptScreenState extends State<EncryptScreen> {
                   onPressed: _isProcessing ? null : _processPdf,
                   style: AppStyles.primaryButton,
                   child: _isProcessing
-                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 3))
                       : Text(buttonText),
                 ),
               ),
               const SizedBox(height: 16),
               Text(
-                isEncryptMode 
-                  ? '加密后，任何人打开此PDF都需要输入您设置的密码。请务必牢记密码。' 
-                  : '解密将移除PDF的密码保护，生成一个新的无密码副本。',
+                isEncryptMode ? l10n.t('encrypt_help') : l10n.t('decrypt_help'),
                 style: AppFonts.bodySmall.copyWith(color: AppColors.textHint),
               ),
             ],

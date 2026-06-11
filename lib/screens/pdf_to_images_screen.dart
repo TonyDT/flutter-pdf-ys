@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../services/convert_service.dart';
-import '../services/pdf_service.dart';
 import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
@@ -19,8 +18,6 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
   File? _selectedPdf;
   List<File>? _outputImages;
   bool _isProcessing = false;
-  int _currentPage = 0;
-  int _totalPages = 0;
 
   Future<void> _pickPdf() async {
     final result = await FilePicker.pickFiles(
@@ -31,8 +28,6 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
       setState(() {
         _selectedPdf = File(result.files.first.path!);
         _outputImages = null;
-        _currentPage = 0;
-        _totalPages = 0;
       });
     }
   }
@@ -74,7 +69,10 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
     
     try {
       final xFiles = _outputImages!.map((f) => XFile(f.path)).toList();
-      await Share.shareXFiles(xFiles, text: 'PDF Pro - PDF转图片');
+      await SharePlus.instance.share(ShareParams(
+        files: xFiles,
+        text: 'PDF Pro - PDF转图片',
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -205,10 +203,10 @@ class _PdfToImagesScreenState extends State<PdfToImagesScreen> {
                               foregroundColor: AppColors.primary,
                             ),
                             onPressed: () async {
-                              await Share.shareXFiles(
-                                [XFile(_outputImages![index].path)],
+                              await SharePlus.instance.share(ShareParams(
+                                files: [XFile(_outputImages![index].path)],
                                 text: 'PDF Pro - 第${index + 1}页',
-                              );
+                              ));
                             },
                           ),
                         ),

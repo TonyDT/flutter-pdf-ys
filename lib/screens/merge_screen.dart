@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../services/pdf_service.dart';
 import '../services/pdf_edit_service.dart';
 
@@ -38,9 +39,12 @@ class _MergeScreenState extends State<MergeScreen> {
   }
 
   Future<void> _merge() async {
+    final l10n = AppLocalizations.of(context);
     if (_selectedFiles.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请至少选择2个PDF文件'), backgroundColor: AppColors.warning),
+        SnackBar(
+            content: Text(l10n.t('select_two_pdfs')),
+            backgroundColor: AppColors.warning),
       );
       return;
     }
@@ -54,28 +58,36 @@ class _MergeScreenState extends State<MergeScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('PDF合并成功！', style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(l10n.t('pdf_merge_success'),
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('已保存至应用目录', style: const TextStyle(fontSize: 12)),
+              Text(l10n.t('saved_to_app_dir'),
+                  style: const TextStyle(fontSize: 12)),
             ],
           ),
           backgroundColor: AppColors.success,
           duration: const Duration(seconds: 3),
         ),
       );
-      Share.shareXFiles([XFile(result.path)], text: 'PDF Pro - 合并结果');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(result.path)],
+        text: 'PDF Pro',
+      ));
       setState(() => _selectedFiles.clear());
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('合并失败'), backgroundColor: AppColors.error),
+        SnackBar(
+            content: Text(l10n.t('merge_failed')),
+            backgroundColor: AppColors.error),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('合并PDF', style: AppFonts.h3)),
+      appBar: AppBar(title: Text(l10n.t('merge_pdf'), style: AppFonts.h3)),
       body: Column(
         children: [
           Padding(
@@ -86,7 +98,7 @@ class _MergeScreenState extends State<MergeScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickFiles,
                 icon: const Icon(Icons.add),
-                label: const Text('添加PDF文件'),
+                label: Text(l10n.t('add_pdf_files')),
                 style: AppStyles.outlineButton,
               ),
             ),
@@ -97,9 +109,13 @@ class _MergeScreenState extends State<MergeScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.merge_type, size: 64, color: AppColors.textHint.withValues(alpha: 0.4)),
+                        Icon(Icons.merge_type,
+                            size: 64,
+                            color: AppColors.textHint.withValues(alpha: 0.4)),
                         const SizedBox(height: 12),
-                        Text('添加要合并的文件', style: AppFonts.bodyMedium.copyWith(color: AppColors.textHint)),
+                        Text(l10n.t('add_files_to_merge'),
+                            style: AppFonts.bodyMedium
+                                .copyWith(color: AppColors.textHint)),
                       ],
                     ),
                   )
@@ -114,10 +130,17 @@ class _MergeScreenState extends State<MergeScreen> {
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                            child: Text('${index + 1}', style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                            backgroundColor:
+                                AppColors.primary.withValues(alpha: 0.1),
+                            child: Text('${index + 1}',
+                                style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold)),
                           ),
-                          title: Text(file.path.split('/').last, style: AppFonts.bodyMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                          title: Text(file.path.split('/').last,
+                              style: AppFonts.bodyMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
                           trailing: IconButton(
                             icon: const Icon(Icons.close, size: 20),
                             onPressed: () => _removeFile(index),
@@ -138,8 +161,13 @@ class _MergeScreenState extends State<MergeScreen> {
                     onPressed: _isProcessing ? null : _merge,
                     style: AppStyles.primaryButton,
                     child: _isProcessing
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
-                        : Text('合并 ${_selectedFiles.length} 个文件'),
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 3))
+                        : Text(l10n.t('merge_files',
+                            params: {'count': '${_selectedFiles.length}'})),
                   ),
                 ),
               ),

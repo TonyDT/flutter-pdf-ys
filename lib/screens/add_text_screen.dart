@@ -69,14 +69,17 @@ class _AddTextScreenState extends State<AddTextScreen> {
         await outputDir.create(recursive: true);
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final file = File(p.join(outputDir.path, 'added_text_${timestamp}.pdf'));
+      final file = File(p.join(outputDir.path, 'added_text_$timestamp.pdf'));
       await file.writeAsBytes(newBytes);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('文字添加成功！'), backgroundColor: AppColors.success),
         );
-        Share.shareXFiles([XFile(file.path)], text: 'PDF Pro - 添加文字');
+        SharePlus.instance.share(ShareParams(
+          files: [XFile(file.path)],
+          text: 'PDF Pro - 添加文字',
+        ));
       }
     } catch (e) {
       if (mounted) {

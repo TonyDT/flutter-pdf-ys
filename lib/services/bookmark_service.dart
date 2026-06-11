@@ -1,7 +1,4 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
-import 'package:path/path.dart' as p;
 
 class BookmarkEntry {
   final String filePath;

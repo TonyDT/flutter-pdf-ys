@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
 import '../core/constants/app_styles.dart';
+import '../core/l10n/app_localizations.dart';
 import '../services/convert_service.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -37,6 +38,7 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
 
   Future<void> _convertToPdf() async {
     if (_selectedImages.isEmpty) return;
+    final l10n = AppLocalizations.of(context);
     setState(() => _isProcessing = true);
     try {
       debugPrint('开始生成PDF，图片数量: ${_selectedImages.length}');
@@ -45,13 +47,17 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
         setState(() => _outputFile = file);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('PDF生成成功！'), backgroundColor: AppColors.success),
+            SnackBar(
+                content: Text(l10n.t('pdf_generate_success')),
+                backgroundColor: AppColors.success),
           );
         }
       } else {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('PDF生成失败，请重试'), backgroundColor: AppColors.error),
+            SnackBar(
+                content: Text(l10n.t('pdf_generate_failed')),
+                backgroundColor: AppColors.error),
           );
         }
       }
@@ -60,7 +66,9 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
       debugPrint('堆栈跟踪: $stackTrace');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('PDF生成失败: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+              content: Text('${l10n.t('pdf_generate_failed')}: $e'),
+              backgroundColor: AppColors.error),
         );
       }
     } finally {
@@ -70,24 +78,30 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
 
   void _shareFile() {
     if (_outputFile != null) {
-      Share.shareXFiles([XFile(_outputFile!.path)], text: 'PDF Pro - 图片转PDF');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(_outputFile!.path)],
+        text: 'PDF Pro',
+      ));
     }
   }
 
   Future<void> _saveToGallery() async {
     if (_outputFile == null) return;
-    
+
     // 使用分享功能让用户保存文件
     try {
-      await Share.shareXFiles(
-        [XFile(_outputFile!.path)],
-        text: 'PDF Pro - 图片转PDF',
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(_outputFile!.path)],
+        text: 'PDF Pro',
         subject: _outputFile!.path.split('/').last,
-      );
+      ));
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('保存失败: $e'), backgroundColor: AppColors.error),
+          SnackBar(
+              content:
+                  Text('${AppLocalizations.of(context).t('save_failed')}: $e'),
+              backgroundColor: AppColors.error),
         );
       }
     }
@@ -95,8 +109,9 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('图片转PDF', style: AppFonts.h3)),
+      appBar: AppBar(title: Text(l10n.t('image_to_pdf'), style: AppFonts.h3)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -107,13 +122,16 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
               child: OutlinedButton.icon(
                 onPressed: _pickImages,
                 icon: const Icon(Icons.add_photo_alternate),
-                label: const Text('选择图片'),
+                label: Text(l10n.t('select_images')),
                 style: AppStyles.outlineButton,
               ),
             ),
             if (_selectedImages.isNotEmpty) ...[
               const SizedBox(height: 16),
-              Text('已选择 ${_selectedImages.length} 张图片', style: AppFonts.h4),
+              Text(
+                  l10n.t('selected_images',
+                      params: {'count': '${_selectedImages.length}'}),
+                  style: AppFonts.h4),
               const SizedBox(height: 12),
               GridView.builder(
                 shrinkWrap: true,
@@ -147,7 +165,8 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
                               color: Colors.red,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(Icons.close, size: 16, color: Colors.white),
+                            child: const Icon(Icons.close,
+                                size: 16, color: Colors.white),
                           ),
                         ),
                       ),
@@ -163,30 +182,38 @@ class _ImagesToPdfScreenState extends State<ImagesToPdfScreen> {
                   onPressed: _isProcessing ? null : _convertToPdf,
                   style: AppStyles.primaryButton,
                   child: _isProcessing
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('生成PDF'),
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2))
+                      : Text(l10n.t('generate_pdf')),
                 ),
               ),
             ],
             if (_outputFile != null) ...[
               const SizedBox(height: 24),
-              Text('输出文件', style: AppFonts.h4),
+              Text(l10n.t('output_file'), style: AppFonts.h4),
               const SizedBox(height: 8),
               Card(
                 child: ListTile(
-                  leading: const Icon(Icons.picture_as_pdf, color: AppColors.primary),
-                  title: Text(_outputFile!.path.split('/').last, style: AppFonts.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  leading: const Icon(Icons.picture_as_pdf,
+                      color: AppColors.primary),
+                  title: Text(_outputFile!.path.split('/').last,
+                      style: AppFonts.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.save_alt),
-                        tooltip: '保存到相册',
+                        tooltip: l10n.t('save_to_gallery'),
                         onPressed: _saveToGallery,
                       ),
                       IconButton(
                         icon: const Icon(Icons.share),
-                        tooltip: '分享',
+                        tooltip: l10n.t('share'),
                         onPressed: _shareFile,
                       ),
                     ],

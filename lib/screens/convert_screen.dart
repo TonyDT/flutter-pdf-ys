@@ -56,7 +56,10 @@ class _ConvertScreenState extends State<ConvertScreen> {
   }
 
   void _shareFile(File file) {
-    Share.shareXFiles([XFile(file.path)], text: 'PDF Pro - Converted file');
+    SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
+      text: 'PDF Pro - Converted file',
+    ));
   }
 
   @override

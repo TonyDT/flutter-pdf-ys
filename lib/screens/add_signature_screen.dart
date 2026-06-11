@@ -25,7 +25,7 @@ class _AddSignatureScreenState extends State<AddSignatureScreen> {
   final List<Offset?> _signaturePoints = [];
   double _signatureX = 350;
   double _signatureY = 650;
-  Color _signatureColor = Colors.black;
+  final Color _signatureColor = Colors.black;
   double _strokeWidth = 2.0;
 
   Future<void> _pickFile() async {
@@ -61,7 +61,11 @@ class _AddSignatureScreenState extends State<AddSignatureScreen> {
 
         // 使用 PdfPen 在页面上绘制签名路径
         final pen = PdfPen(
-          PdfColor(_signatureColor.red.toInt(), _signatureColor.green.toInt(), _signatureColor.blue.toInt()),
+          PdfColor(
+            (_signatureColor.r * 255).round().clamp(0, 255),
+            (_signatureColor.g * 255).round().clamp(0, 255),
+            (_signatureColor.b * 255).round().clamp(0, 255),
+          ),
           width: _strokeWidth,
         );
 
@@ -88,14 +92,17 @@ class _AddSignatureScreenState extends State<AddSignatureScreen> {
         await outputDir.create(recursive: true);
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final file = File(p.join(outputDir.path, 'signed_${timestamp}.pdf'));
+      final file = File(p.join(outputDir.path, 'signed_$timestamp.pdf'));
       await file.writeAsBytes(newBytes);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('签名添加成功！'), backgroundColor: AppColors.success),
         );
-        Share.shareXFiles([XFile(file.path)], text: 'PDF Pro - 签名PDF');
+        SharePlus.instance.share(ShareParams(
+          files: [XFile(file.path)],
+          text: 'PDF Pro - 签名PDF',
+        ));
       }
     } catch (e) {
       if (mounted) {

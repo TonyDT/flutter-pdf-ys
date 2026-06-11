@@ -94,7 +94,7 @@ class _TextToPdfScreenState extends State<TextToPdfScreen> {
         await outputDir.create(recursive: true);
       }
       final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
-      final file = File(p.join(outputDir.path, 'text_${timestamp}.pdf'));
+      final file = File(p.join(outputDir.path, 'text_$timestamp.pdf'));
       await file.writeAsBytes(bytes);
 
       setState(() => _outputFile = file);
@@ -120,7 +120,10 @@ class _TextToPdfScreenState extends State<TextToPdfScreen> {
 
   void _shareFile() {
     if (_outputFile != null) {
-      Share.shareXFiles([XFile(_outputFile!.path)], text: 'PDF Pro - 文本转PDF');
+      SharePlus.instance.share(ShareParams(
+        files: [XFile(_outputFile!.path)],
+        text: 'PDF Pro - 文本转PDF',
+      ));
     }
   }
 

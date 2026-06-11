@@ -29,15 +29,18 @@ class FileService {
 
   /// 分享文本内容
   static Future<void> shareText(String text, {String? subject}) async {
-    await Share.share(text, subject: subject ?? 'OCR识别结果');
+    await SharePlus.instance.share(ShareParams(
+      text: text,
+      subject: subject ?? 'OCR识别结果',
+    ));
   }
 
   /// 分享文件
   static Future<void> shareFile(File file, {String? text}) async {
-    await Share.shareXFiles(
-      [XFile(file.path)],
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path)],
       text: text ?? 'OCR识别结果',
-    );
+    ));
   }
 
   /// 复制文本到剪贴板

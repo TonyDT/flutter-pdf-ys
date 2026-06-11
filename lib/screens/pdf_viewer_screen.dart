@@ -5,8 +5,6 @@ import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../core/constants/app_colors.dart';
 import '../core/constants/app_fonts.dart';
-import '../core/constants/app_styles.dart';
-import '../core/premium/premium_provider.dart';
 import '../core/theme/theme_provider.dart';
 import '../services/bookmark_service.dart';
 
@@ -104,6 +102,7 @@ class _PdfViewerScreenState extends ConsumerState<PdfViewerScreen> {
                             icon: const Icon(Icons.delete_outline, size: 20, color: AppColors.textSecondary),
                             onPressed: () async {
                               await BookmarkService.removeBookmark(bm.filePath, bm.pageNumber);
+                              if (!context.mounted) return;
                               Navigator.pop(ctx);
                               _checkBookmark();
                             },

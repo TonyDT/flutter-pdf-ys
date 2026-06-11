@@ -1,16 +1,49 @@
-# flutter_pdf
+# PDF Pro - 全能 PDF 处理工具
 
-A new Flutter project.
+├── lib
+│   ├── core           # 核心配置（常量、内购 Provider、主题）
+│   ├── services       # 业务逻辑（PDF 压缩、加密、转换服务）
+│   ├── screens        # UI 界面（首页、工具页、内购页）
+│   └── main.dart      # 应用入口
+├── assets             # 静态资源（图标、图片）
+└── android/ios        # 平台相关配置（如 Google Play 内购权限）
 
-## Getting Started
+PDF Pro 是一款基于 Flutter 开发的高性能、极简风格的 PDF 全功能处理应用。它专注于提供流畅的阅读体验与强大的文档编辑能力，所有操作均在本地完成，确保您的隐私数据安全。
 
-This project is a starting point for a Flutter application.
+## 🌟 核心功能
 
-A few resources to get you started if this is your first Flutter project:
+### 📖 深度阅读
+*   **流畅引擎**：基于高性能渲染内核，支持超大文件快速加载。
+*   **个性化配置**：支持深色模式、亮度调节及多种翻页模式。
+*   **书签管理**：记录阅读进度，支持多级书签跳转。
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 🛠️ PDF 增强工具
+*   **文档转换**：支持图片转 PDF、PDF 转图片（及长图）、文本转 PDF。
+*   **内容编辑**：支持在 PDF 中直接编辑文本、添加文字、手写签名及各类注释（高亮、下划线、删除线）。
+*   **页面管理**：支持多文件合并、精确拆分、页面重新排序及删除。
+*   **安全加密**：支持设置/解除 PDF 强力密码保护，支持权限精细化控制。
+*   **体积优化**：提供多级无损压缩方案，显著减小文件体积。
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### 💎 Pro 会员功能
+*   解锁全量高级编辑工具。
+*   支持批量处理与高级导出设置。
+*   无广告干扰，尊享纯净体验。
+
+## 🚀 技术架构
+
+*   **UI 框架**：Flutter (Material 3)
+*   **状态管理**：Riverpod
+*   **数据存储**：Hive (高性能本地 NoSQL)
+*   **PDF 渲染**：Syncfusion & pdfx
+*   **构建工具**：Gradle 8.10.2 / Kotlin 2.1.0
+
+## 🛠️ 开始使用
+
+### 环境要求
+*   Flutter SDK: `^3.6.2`
+*   Dart SDK: `^3.6.2`
+*   Android SDK: API 21+
+
+### 安装步骤 
+1.  克隆仓库：
+    

@@ -1,46 +1,29 @@
 # Privacy Policy
 
-**Effective Date:** May 21, 2026
+**Effective Date:** June 10, 2026
 
-ZeronPDF-OffVault ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we handle information when you use our mobile application.
+ZeronPDF-OffVault is an offline PDF processing app. PDF files, generated files, annotations, bookmarks, theme settings, and premium status are processed and stored locally on your device.
 
-## 1. Information We Collect
+## Information We Collect
 
-**We do not collect any personal information.**
+We do not operate an app server and do not collect, upload, sell, or share your PDF files or personal information.
 
-ZeronPDF-OffVault is an offline PDF processing tool. All file processing (merge, split, encrypt, decrypt, convert, etc.) is performed **locally on your device**. We do not have access to your files, and no data is transmitted to our servers.
+## Google Play Purchases
 
-## 2. How We Use Information
+The app uses Google Play Billing to process the one-time Pro unlock. Payment information is handled by Google Play. The app stores only the local premium entitlement state and purchase reference needed to unlock and restore Pro features.
 
-Since we do not collect any personal information, we do not use or share any data.
+## Files and Documents
 
-## 3. Data Storage
+The app may access files that you choose through the system file picker. This access is used only to open, edit, convert, compress, encrypt, export, or share the files you select.
 
-All PDF files and data you process within the app remain **only on your device**. We do not store, upload, or backup any of your files on external servers.
+## Third-Party Services
 
-## 4. Third-Party Services
+The app does not include advertising SDKs, analytics SDKs, or tracking SDKs. Google Play services may process purchase information when you buy or restore Pro.
 
-Our app does **not** integrate with any third-party analytics, advertising, or tracking services.
+## Data Deletion
 
-## 5. Security
+You can delete generated files from your device and uninstall the app to remove local app data. Purchases remain associated with your Google Play account and can be restored through Google Play.
 
-Your data security is important to us. Because all processing happens locally on your device, your files are never exposed to external networks or servers.
+## Contact Us
 
-## 6. Children's Privacy
-
-Our app does not knowingly collect personal information from children under the age of 13. Since we do not collect any data, this app is safe for users of all ages.
-
-## 7. Changes to This Privacy Policy
-
-We may update this Privacy Policy from time to time. Any changes will be posted within the app and on this page.
-
-## 8. Contact Us
-
-If you have any questions about this Privacy Policy, please contact us at:
-
-- **Email:** privacy@zeronpdf.com
-- **Address:** [Your Business Address]
-
----
-
-By using ZeronPDF-OffVault, you consent to this Privacy Policy.
+For privacy questions, contact privacy@zeronpdf.com.
